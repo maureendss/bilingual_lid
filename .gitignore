@@ -5,3 +5,4 @@ local
 kaldi_setup/steps
 kaldi_setup/utils
 kaldi_setup/sid
+data/*/wavs
