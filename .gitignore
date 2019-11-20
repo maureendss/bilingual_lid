@@ -1,5 +1,5 @@
 #all files in local are for training
-.local
+local
 
 #steps and utils are symlinks to kaldi/wsj/s5 directories
 kaldi_setup/steps
