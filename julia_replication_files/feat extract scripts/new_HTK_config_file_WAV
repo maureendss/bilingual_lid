@@ -1,0 +1,18 @@
+SOURCEFORMAT = WAV                                                                                      
+TARGETFORMAT = HTK                                               
+TARGETKIND   = MFCC_0
+                                                                 
+#LOFREQ       = 300   #these values are usually used in telephone signal processing, not useful here
+#HIFREQ       = 3200
+NUMCHANS     = 25        # number of critical bands               
+USEPOWER     = T        # using power spectrum                   
+USEHAMMING   = T        # use hamming window on speech frame     
+ENORMALISE   = F
+                                                                 
+PREEMCOEF    = 0        # no preemphase                          
+TARGETRATE   = 100000   # 10 ms frame rate                       
+WINDOWSIZE   = 250000   # 25 ms window                           
+SAVEWITHCRC  = F                                                 
+                                                                 
+#CEPLIFTER   = 22                                                
+NUMCEPS      = 12                                                
