@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+ #!/usr/bin/env bash
 
 # File for first steps on IVector Experiments
 
@@ -21,6 +21,8 @@ set -e # exit on error
 
 if [ $stage -eq 0 ] || [ $stage -lt 0 ] && [ "${grad}" == "true" ]; then
 
+
+    #./local/data_prep/prepare_xitsonga_english.sh
     # ...
     # Put data preparation scripts here
     # ...

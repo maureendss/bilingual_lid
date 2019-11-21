@@ -25,7 +25,7 @@ if [ "$dataset" == "nchlt-xitsonga" ]; then
         b=$(echo $l | cut -d'_' -f4)
         a_prime=$(echo $a | sed 's/[a-z]//g') # a bit farfetched. need to make it cleaner. 
 
-        ln -s "${path_ds}/${a_prime}/nchlt_tso_${a}_${b}.wav" ${tgt_dir}/${l}
+        ln -s "${path_ds}/${a_prime}/nchlt_tso_${a}_${b}.wav" ${tgt_dir}/${l}.wav
         echo "Symlinked file ${l} to ${tgt_dir}."
 
 
@@ -43,7 +43,7 @@ elif [ "$dataset" == "timit" ]; then
         b=$(echo $l | cut -d'_' -f2)
 
         cur_dir=$(find $path_ds -type d -name $a)
-        find $cur_dir -type f -name ${b}.wav -exec ln -s {} ${tgt_dir}/${l} \;
+        find $cur_dir -type f -name ${b}.wav -exec ln -s {} ${tgt_dir}/${l}.wav \;
         echo "Symlinked file ${l} to ${tgt_dir}."
 
     done
