@@ -12,7 +12,7 @@ raw_data=../../data/xitsonga_english
 vad=false #not in original experiment. 
 
 num_gauss=128
-
+test_data=test
 
 . ./cmd.sh
 . ./path.sh
@@ -134,7 +134,7 @@ fi
 
 if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
 
-    test_data=test
+
     # use local version for blind test. TODO: see later if usefel (depending on how we test). 
     # local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj 50 \
     #                         exp/ubm/extractor_full_ubm_${num_gauss}_${train} ${data}/${test_data} exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}
@@ -146,3 +146,11 @@ if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
 fi
 
 # -------------------------------------------------------------------------
+
+if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
+    #TODO make it compatible with slurm
+    for train in train_english train_xitsonga train_bilingual; do
+
+        local/utils/ivectors_to_h5f.py exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/ivector.scp exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}
+    done
+fi
