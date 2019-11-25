@@ -1,4 +1,4 @@
 #all files in local are for training
-./local
+/local
 
-data/*/wavs
+/data/*/wavs
