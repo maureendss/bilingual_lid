@@ -12,7 +12,10 @@ raw_data=../../data/xitsonga_english
 vad=false #not in original experiment. 
 
 num_gauss=128
+ivector_dim=600
 test_data=test
+
+abx_dir=../abx/kaldi_exps
 
 . ./cmd.sh
 . ./path.sh
@@ -124,7 +127,9 @@ if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
     
         
     lid/train_ivector_extractor.sh --cmd "$train_cmd --mem 2G" \
-                                   --num-iters 5 --num_processes 1 exp/ubm/full_ubm_${num_gauss}_${train}/final.ubm ${data}/${train}  exp/ubm/extractor_full_ubm_${num_gauss}_${train}
+                                   --num-iters 5 --num_processes 1 \
+                                   --ivector_dim ${ivector_dim} \
+                                   exp/ubm/full_ubm_${num_gauss}_${train}/final.ubm ${data}/${train}  exp/ubm/extractor_full_ubm_${num_gauss}_${train}
     #stopped here
 
     done
@@ -148,9 +153,33 @@ fi
 # -------------------------------------------------------------------------
 
 if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
-    #TODO make it compatible with slurm
+    #TODO make it compatible with slurm and make it check if data already exist.
+
+    for train in train_english train_xitsonga train_bilingual; do
+        echo "** Computing ivectors_to_h5fh5f files for exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/** "
+        rm exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/ivectors.h5f
+        sbatch --mem=40G -n 5 local/utils/ivectors_to_h5f.py exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/ivector.scp exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}
+        while [ ! -f exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/ivectors.h5f ]; do
+            sleep 2
+        done 
+    done
+
+    #create ivectors.item
+    echo "** Creating ${data}/${test_data}/ivectors.item **"
+    python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_data}/utt2lang ${data}/${test_data}
+
+    echo "** Creating abx directories in ${abx_dir} **"
+    #create abx directories
     for train in train_english train_xitsonga train_bilingual; do
 
-        local/utils/ivectors_to_h5f.py exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/ivector.scp exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}
-    done
+        path_to_h5f=$(readlink -f exp/ivectors/ivectors_${num_gauss}_tr-${train}_ts-${test_data}/ivectors.h5f)
+        path_to_item=$(readlink -f ${data}/${test_data}/ivectors.item)
+        tgt_abx_dir=${abx_dir}/ivectors_${num_gauss}_tr-${train}_ts-${test_data}
+
+        rm -f ${tgt_abx_dir}/ivectors.*
+        mkdir -p ${tgt_abx_dir}
+        ln -s ${path_to_h5f} ${tgt_abx_dir}/. #CREATE ABX DIR ETC!!!!
+        ln -s ${path_to_item} ${tgt_abx_dir}/.
+    done;
+        
 fi

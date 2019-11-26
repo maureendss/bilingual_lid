@@ -15,15 +15,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("feats_file", help="path to the ivector.scp we're going to use as example")
     parser.add_argument("target_dir", help="path to target dir")
-    # parser.add_argument("--filler", type=int, default=1, help="value to fille the matrix with (1 or 0)")
 
     parser.parse_args()
     args, leftovers = parser.parse_known_args()
 
     try:
-        os.makedirs('{}/tmp'.format(args.target_dir))
+        shutil.rmtree('{}/tmp'.format(args.target_dir))
     except:
         pass
+
+    os.makedirs('{}/tmp'.format(args.target_dir))
+
+
 
     with kaldiio.ReadHelper('scp:{}'.format(args.feats_file)) as reader: 
         filenames=[] 
