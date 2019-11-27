@@ -1,11 +1,15 @@
  #!/usr/bin/env bash
 
+
+no_speaker_info=false #We pretend each utterance comes from different speaker. (Just for practicity purposes Probably not needed as we won't generate cmvn but never know. Would have to compare). 
+
+
+
 . ./cmd.sh
 . ./path.sh
 . utils/parse_options.sh
 
 
-no_speaker_info=true #We pretend each utterance comes from different speaker. (Just for practicity purposes Probably not needed as we won't generate cmvn but never know. Would have to compare). 
 
 set -e # exit on error
 
@@ -45,15 +49,28 @@ elif [ "$no_speaker_info" == "true" ]; then
     cp $tgt_dir/utt2spk $tgt_dir/spk2utt
 
 else
-    echo "We can't handle yet the case when want to create real spk2utt and utt2spk files with xitsonga/english dataset --> exiting" && exit 1
+    
+    if [[ $(basename ${utt_list}) == *"english"* ]]; then
+        echo "Creating utt2spk english"
+        awk -F'_' '{print $1"_"$2" "$1}' $utt_list | sort > $tgt_dir/utt2spk
+        utils/utt2spk_to_spk2utt.pl $tgt_dir/utt2spk > $tgt_dir/spk2utt
+    elif [[ $(basename ${utt_list}) == *"xitsonga"* ]]; then
+        echo "Creating utt2spk xitsonga"
+        awk -F'_' '{print $1"_"$2"_"$3"_"$4" "$1"_"$2"_"$3}' $utt_list | sort > $tgt_dir/utt2spk
+        utils/utt2spk_to_spk2utt.pl $tgt_dir/utt2spk > $tgt_dir/spk2utt
+    else
+        echo "--- Couldn't figure out what language the utt_list contains. Please create $tgt_dir/utt2spk and spk2utt manually ---"
+    fi
+
+    
 fi
 
-if  [ -f $tgt_dir/utt2lang ]; then
+if  [ ! -f $tgt_dir/utt2lang ]; then
 
     #todo: instead of if statements, maybe create an additional "language" variable
-    if [ "${utt_list}" == "*english*" ]; then
+    if [[ $(basename ${utt_list}) == *"english"* ]]; then
         awk '{print $1" english"}' $utt_list | sort > $tgt_dir/utt2lang
-    elif [ "${utt_list}" == "*xitsonga*" ]; then 
+    elif [[ $(basename ${utt_list}) == *"xitsonga"* ]]; then 
         awk '{print $1" xitsonga"}' $utt_list | sort > $tgt_dir/utt2lang
     else
         echo "--- Couldn't figure out what language the utt_list contains. Please create $tgt_dir/utt2lang manually ---"

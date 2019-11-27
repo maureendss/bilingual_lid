@@ -15,15 +15,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("feats_file", help="path to the ivector.scp we're going to use as example")
     parser.add_argument("target_dir", help="path to target dir")
-
+    parser.add_argument("--output_name", type=str, default="ivectors.h5f", help="name to output file (ivectors.h5f or lda_ivectors.h5f")
     parser.parse_args()
     args, leftovers = parser.parse_known_args()
 
+
+    print(args.output_name)
     try:
         shutil.rmtree('{}/tmp'.format(args.target_dir))
     except:
         pass
 
+
+    if os.path.exists('{}/{}'.format(args.target_dir, args.output_name)):
+        os.remove('{}/{}'.format(args.target_dir, args.output_name))
+    
     os.makedirs('{}/tmp'.format(args.target_dir))
 
 
@@ -37,7 +43,7 @@ if __name__ == "__main__":
             np.savez('{}/tmp/{}'.format(args.target_dir, key), features=ivector_2d, time=times)
 
             
-    any2h5features.convert('{}/tmp'.format(args.target_dir), '{}/ivectors.h5f'.format(args.target_dir))
+    any2h5features.convert('{}/tmp'.format(args.target_dir), '{}/{}'.format(args.target_dir, args.output_name))
 
     
     shutil.rmtree('{}/tmp'.format(args.target_dir))
