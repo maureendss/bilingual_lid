@@ -39,3 +39,18 @@ abx-score $task $distance $score
 
 # collapsing the results
 abx-analyze $score $task $analyze
+
+
+# Avergae results
+l1=$(sed '2q;d' $analyze)
+l2=$(sed '3q;d' $analyze)
+num_1=$(echo $l1 | cut -d' ' -f 5)
+num_2=$(echo $l2 | cut -d' ' -f 5)
+score_1=$(echo $l1 | cut -d' ' -f 4)
+score_2=$(echo $l2 | cut -d' ' -f 4)
+
+if [ "$num_1" == "$num_2" ]; then
+    echo |awk -v v1="$score_1" -v v2="$score_2" '{ print (v1+v2)/2 }' > $abx_dir/abx.avg
+else
+    echo "Not same number of utterances -> couldn't compute average abx score."
+fi

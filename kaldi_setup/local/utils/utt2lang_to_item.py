@@ -12,8 +12,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("utt2lang", help="path to utt2lang")
-    parser.add_argument("path_to_output", help="path to output ivectors.item.")
+    parser.add_argument("datadir", help="path to data directory (should contain utt2spk, utt2lang and will output ivectors.item).")
     parser.add_argument("--ivector_dim", type=int, default=600, help="ivector_dimensions")
     parser.parse_args()
     args, leftovers = parser.parse_known_args()
@@ -26,16 +25,22 @@ if __name__ == "__main__":
     if args.ivector_dim == 600:
         warnings.warn("Warning: using the default value for I-Vector dims of 600. Please use --ivector_dim if your value is different.")
 
-    #Create .item files.
-    with open(args.utt2lang, 'r') as input_utt2lang:
+    #Create .item files
+    with open("{}/utt2lang".format(args.datadir), 'r') as input_utt2lang:
         utt2lang_dict={}
         for line in input_utt2lang:
-            utt2lang_dict[line.split(' ')[0]] = line.split(' ')[1]
+            utt2lang_dict[line.split(' ')[0]] = line.split(' ')[1].strip('\n')
 
+    with open("{}/utt2spk".format(args.datadir), 'r') as input_utt2spk:
+        utt2spk_dict={}
+        for line in input_utt2spk:
+            utt2spk_dict[line.split(' ')[0]] = line.split(' ')[1].strip('\n')
+
+            
     utt_list = sorted(list(utt2lang_dict.keys()))
-    with open('{}/ivectors.item'.format(args.path_to_output), 'w') as output:
-        output.write('#file onset offset #lang\n')
+    with open('{}/ivectors.item'.format(args.datadir), 'w') as output:
+        output.write('#file onset offset #lang spk\n')
         for utt in utt_list:
-            output.write("{} {} {} {}".format(utt, 0, args.ivector_dim, utt2lang_dict[utt]))
+            output.write("{} {} {} {} {}\n".format(utt, 0, args.ivector_dim, utt2lang_dict[utt], utt2spk_dict[utt]))
         
         
