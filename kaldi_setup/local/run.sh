@@ -63,15 +63,19 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ]; then
     mfcc_conf=conf/mfcc.original.conf
 
     for x in train_english train_xitsonga test_english test_xitsonga; do
-        steps/make_mfcc.sh --mfcc-config ${mfcc_conf} --cmd "${train_cmd}" --nj ${nj} \
-                           ${data}/${x}${feats_suffix}
+
+        if [ ! -f ${data}/${x}${feats_suffix}/feats.scp ]; then
+            
+            steps/make_mfcc.sh --mfcc-config ${mfcc_conf} --cmd "${train_cmd}" --nj ${nj} \
+                               ${data}/${x}${feats_suffix}
+        fi
         #creating fake cmvn
 
-        if [ "${cmvn}" == "true" ]; then
+        if [ "${cmvn}" == "true" ] && [ ! -f ${data}/${x}${feats_suffix}/cmvn.scp ]; then
             steps/compute_cmvn_stats.sh ${data}/${x}${feats_suffix}
         fi
 
-        if [ "${vad}" == "true" ]; then
+        if [ "${vad}" == "true" ] && [ ! -f ${data}/${x}${feats_suffix}/vad.scp ]; then
             steps/compute_vad_decision.sh --cmd "$train_cmd" ${data}/${x}${feats_suffix}
         # else
         #     echo "Creating a fake vad file"

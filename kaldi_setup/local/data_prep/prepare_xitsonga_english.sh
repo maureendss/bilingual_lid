@@ -77,15 +77,19 @@ if  [ ! -f $tgt_dir/utt2lang ]; then
     fi
     
 fi
-    
-if [ ! -f $tgt_dir/segments ]; then
+
+if [ ! -f $tgt_dir/utt2dur ]; then
     #Only works because utterances already segmented. Might also have to create vad.scp
     echo "Creating $tgt_dir/segments from utt2dur"
-    utils/data/get_utt2dur.sh --cmd "$train_cmd" $tgt_dir #need to put it eparately although next script also checks for it if missing as it allows to run it using slurm. 
-    utils/data/get_segments_for_data.sh $tgt_dir
-else
-    echo "$tgt_dir/segments already exist, no recomputing it"
+    utils/data/get_utt2dur.sh --cmd "$train_cmd" $tgt_dir #need to put it eparately although next script also checks for it if missing as it allows to run it using slurm.
 fi
+
+# if [ ! -f $tgt_dir/segments ]; then
+    
+#     utils/data/get_segments_for_data.sh $tgt_dir
+# else
+#     echo "$tgt_dir/segments already exist, no recomputing it"
+# fi
 
 
 utils/fix_data_dir.sh $tgt_dir
