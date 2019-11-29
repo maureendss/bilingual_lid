@@ -24,7 +24,8 @@ deltas_sdc=false # not compatible with deltas
 
 diag_only=false #if true, only train a diag ubm and not a full one. 
 
-lda_dim=19 #NEED TO MAKE IT SIZE OF TEN SET> AUTMOATIZE IT. 
+lda_dim_train=19 #NEED TO MAKE IT SIZE OF TEN SET> AUTMOATIZE IT.
+lda_dim_test=168  ###NUM OF SPEAKERS TO AUTOMATIZE
 num_gauss=128
 ivector_dim=150
 test_data=test
@@ -111,8 +112,6 @@ if [ ! -d ${data}/test${feats_suffix} ]; then
     
 fi
 
-#Need VAD here? Might be required by next steps. 
-
 # UBM Training #
 
 if [ $stage -eq 2 ] || [ $stage -lt 2 ] && [ "${grad}" == "true" ]; then
@@ -142,7 +141,7 @@ if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
 
             mkdir -p exp/ubm${exp_suffix}/full_ubm_${num_gauss}_${train}${feats_suffix}
 
-            #TODO SLURM IT 
+            #TODO SLURM IT !!!!
             gmm-global-to-fgmm exp/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}/final.dubm exp/ubm${exp_suffix}/full_ubm_${num_gauss}_${train}${feats_suffix}/final.ubm
 
         else
@@ -244,59 +243,119 @@ if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ] && [ "$prepar
 fi
 
 
-# COMPUTE LDA AND ADD TO ABX. 
+# COMPUTE LDA AND ADD TO ABX. DO IT ON BOTH TRAIN AND TEST IVECTORS (LDA)
 if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ]; then
 
 
     for train in train_english train_xitsonga train_bilingual; do
-        echo "Computing lda for exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}"
+       
 
-        # ivec_train_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${train}${feats_suffix}
-
-        # #If ivectors not a`lready extracted for train
-        # if [ ! -f ${ivec_train_dir}/ivector.scp ]; then
-        #     local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj 20 \
-        #                                   --cmvn ${cmvn} --vad ${vad} \
-        #                                   --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-        #                                   exp/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${train}${feats_suffix} ${ivec_train_dir};
-        #     printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_train_dir}/feat_opts;
-        # fi
-
-        # logdir_train=${ivec_train_dir}/log
+####
+        ivec_train_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${train}${feats_suffix}
+        logdir_train=${ivec_train_dir}/log
+        ivec_test_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
+        logdir_test=${ivec_test_dir}/log
 
 
- 
-        ivec_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
-        logdir=${ivec_dir}/log
-
+        # --------------------- LDA ON TRAIN SET ----------------
         
-        if [ ! -f ${ivec_dir}/lda.mat ]; then 
-            "$train_cmd"  ${logdir}/compute-lda.log \
-                          ivector-compute-lda --dim=$lda_dim scp:${ivec_dir}/ivector.scp ark:${data}/${test_data}${feats_suffix}/utt2spk ${ivec_dir}/lda.mat
+        #If ivectors not a`lready extracted for train
+        if [ ! -f ${ivec_train_dir}/ivector.scp ]; then
+            local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj 20 \
+                                          --cmvn ${cmvn} --vad ${vad} \
+                                          --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                          exp/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${train}${feats_suffix} ${ivec_train_dir};
+            printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_train_dir}/feat_opts;
+        fi
+
+        if [ ! -f ${ivec_train_dir}/lda.mat ]; then
+
+            echo "Computing lda for exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${train}${feats_suffix}"
+
+            # AUTOMATIZE FINDING LDA DIM (just wc spk2utt)
+            "$train_cmd"  ${logdir_train}/compute-lda.log \
+                          ivector-compute-lda --dim=$lda_dim_train scp:${ivec_train_dir}/ivector.scp ark:${data}/${train}${feats_suffix}/utt2spk ${ivec_train_dir}/lda.mat
+        fi
+
+        #APPLY ON TEST IVECTORS
+        # if [ ! -f ${ivec_test_dir}/lda-train_ivector.scp ]; then 
+            
+            "$train_cmd"  ${logdir_test}/transform-ivectors-train.log \
+                          ivector-transform ${ivec_train_dir}/lda.mat scp:${ivec_test_dir}/ivector.scp ark,scp:${ivec_test_dir}/lda-train_ivector.ark,${ivec_test_dir}/lda-train_ivector.scp;
+        #fi
+
+
+
+        # --------------------- LDA ON TEST SET ----------------
+        
+        if [ ! -f ${ivec_test_dir}/lda.mat ]; then
+
+            echo "Computing lda for exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}"
+
+            
+            "$train_cmd"  ${logdir_test}/compute-lda.log \
+                          ivector-compute-lda --dim=$lda_dim_test scp:${ivec_test_dir}/ivector.scp ark:${data}/${test_data}${feats_suffix}/utt2spk ${ivec_test_dir}/lda.mat
         fi
 
 
-        if [ ! -f ${ivec_dir}/lda_ivector.scp ]; then 
+        if [ ! -f ${ivec_test_dir}/lda_ivector.scp ]; then 
             
-            "$train_cmd"  ${logdir}/transform-ivectors.log \
-                          ivector-transform ${ivec_dir}/lda.mat scp:${ivec_dir}/ivector.scp ark,scp:${ivec_dir}/lda_ivector.ark,${ivec_dir}/lda_ivector.scp;
+            "$train_cmd"  ${logdir_test}/transform-ivectors-test.log \
+                          ivector-transform ${ivec_test_dir}/lda.mat scp:${ivec_test_dir}/ivector.scp ark,scp:${ivec_test_dir}/lda_ivector.ark,${ivec_test_dir}/lda_ivector.scp;
         fi
     done
 
+    # --------------------------------- ABX -------------------------------
 
 
+    # ---------- ABX ON TRAIN -------------
 
     if [ "$prepare_abx" == "true" ]; then
 
         for train in train_english train_xitsonga train_bilingual; do
             echo "** Computing ivectors_to_h5f files for exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}/** "
 
-            ivec_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
-            
-            rm -f ${ivec_dir}/lda_ivectors.h5f
-            sbatch --mem=5G -n 5 local/utils/ivectors_to_h5f.py --output_name lda_ivectors.h5f ${ivec_dir}/lda_ivector.scp ${ivec_dir}
-            while [ ! -f ${ivec_dir}/lda_ivectors.h5f ]; do sleep 2; done
+            ivec_test_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
 
+            # 
+            if [ ! -f ${ivec_test_dir}/lda-train_ivectors.h5f ]; then
+                sbatch --mem=5G -n 5 local/utils/ivectors_to_h5f.py --output_name lda-train_ivectors.h5f ${ivec_test_dir}/lda-train_ivector.scp ${ivec_test_dir}
+                while [ ! -f ${ivec_test_dir}/lda-train_ivectors.h5f ]; do sleep 2; done
+            fi
+        done
+
+        echo "** Creating abx directories in ${abx_dir} **"
+        #create abx directories
+        for train in train_english train_xitsonga train_bilingual; do
+
+            #Recreate each time (doesn't take long)
+            path_to_h5f=$(readlink -f exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}/lda-train_ivectors.h5f)
+            path_to_item=$(readlink -f ${data}/${test_data}${feats_suffix}/ivectors.item)
+            tgt_abx_dir=${abx_dir}${exp_suffix}/lda-train_ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
+
+            rm -f ${tgt_abx_dir}/ivectors.*
+            mkdir -p ${tgt_abx_dir}
+            ln -s ${path_to_h5f} ${tgt_abx_dir}/ivectors.h5f # change the name to ivectors.h5f because already n lda directory. to keep consistent. 
+            ln -s ${path_to_item} ${tgt_abx_dir}/.
+        done;
+    fi    
+    
+
+
+    # ---------- ABX ON TEST -------------
+# TODO CHANGE ALL TRAIN / TEST
+    if [ "$prepare_abx" == "true" ]; then
+
+        for train in train_english train_xitsonga train_bilingual; do
+            echo "** Computing ivectors_to_h5f files for exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}/** "
+
+            ivec_test_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
+
+            # 
+            if [ ! -f ${ivec_test_dir}/lda_ivectors.h5f ]; then
+                sbatch --mem=5G -n 5 local/utils/ivectors_to_h5f.py --output_name lda_ivectors.h5f ${ivec_test_dir}/lda_ivector.scp ${ivec_test_dir}
+                while [ ! -f ${ivec_test_dir}/lda_ivectors.h5f ]; do sleep 2; done
+            fi
         done
 
         echo "** Creating abx directories in ${abx_dir} **"
@@ -314,5 +373,28 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ]; then
         done;
     fi    
     
+
+fi
+
+
+## Data analysis
+if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ]; then
+    
+    for train in train_english train_xitsonga train_bilingual; do
+
+        echo "Creating MDS representations for ${train}"
+
+        #TODO: carfeul test ivectors here. Would probably have to do on the test one but lda trained on train
+        tgt_dir=exp/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_data}${feats_suffix}
+        test_utt2lang=${data}/${test_data}${feats_suffix}/utt2lang
+
+        sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.pdf
+
+        sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda_ivector.scp ${test_utt2lang} ${tgt_dir}/lda_ivector-mds.pdf
+
+        sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-train_ivector-mds.pdf
+    done
+
+
 
 fi
