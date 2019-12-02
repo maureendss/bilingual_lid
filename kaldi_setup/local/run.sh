@@ -24,8 +24,8 @@ deltas_sdc=false # not compatible with deltas
 
 diag_only=false #if true, only train a diag ubm and not a full one. 
 
-lda_dim_train=19 #NEED TO MAKE IT SIZE OF TEN SET> AUTMOATIZE IT.
-lda_dim_test=168  ###NUM OF SPEAKERS TO AUTOMATIZE
+lda_dim_test=19 #NEED TO MAKE IT SIZE OF TEN SET> AUTMOATIZE IT.
+lda_dim_train=168  ###NUM OF SPEAKERS TO AUTOMATIZE
 num_gauss=128
 ivector_dim=150
 test_data=test
@@ -255,9 +255,12 @@ if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ] && [ "$prepar
 
                 echo "Computing lda for ${x} "
 
+
+                if [ "${x}" == "${test_data}" ]; then lda_dim=${lda_dim_train}; else lda_dim=${lda_dim_test}; fi
+                
                 # AUTOMATIZE FINDING LDA DIM (just wc spk2utt)
                 "$train_cmd"  ${logdir_lda}/compute-lda.log \
-                              ivector-compute-lda --dim=$lda_dim_train scp:${x}/ivector.scp ark:${data}/${x}${feats_suffix}/utt2spk ${lda_train_dir}/lda.mat
+                              ivector-compute-lda --dim=$lda_dim scp:${x}/ivector.scp ark:${data}/${x}${feats_suffix}/utt2spk ${lda_train_dir}/lda.mat
             fi
 
             if [ ! -f ${ivec_test_dir}/${lda_filename}.scp ]; then
