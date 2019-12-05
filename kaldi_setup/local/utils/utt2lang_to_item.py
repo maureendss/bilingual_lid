@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("datadir", help="path to data directory (should contain utt2spk, utt2lang and will output ivectors.item).")
+    parser.add_argument("output_dir", help="path to the output directory where ivectors.item will be created")
     parser.add_argument("--ivector_dim", type=int, default=600, help="ivector_dimensions")
     parser.parse_args()
     args, leftovers = parser.parse_known_args()
@@ -38,7 +39,7 @@ if __name__ == "__main__":
 
             
     utt_list = sorted(list(utt2lang_dict.keys()))
-    with open('{}/ivectors.item'.format(args.datadir), 'w') as output:
+    with open('{}/ivectors.item'.format(args.output_dir), 'w') as output:
         output.write('#file onset offset #lang spk\n')
         for utt in utt_list:
             output.write("{} {} {} {} {}\n".format(utt, 0, args.ivector_dim, utt2lang_dict[utt], utt2spk_dict[utt]))

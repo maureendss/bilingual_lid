@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("feats_file", help="path to the ivector.scp we're going to use as example")
     parser.add_argument("target_dir", help="path to target dir")
-    parser.add_argument("--output_name", type=str, default="ivectors.h5f", help="name to output file (ivectors.h5f or lda_ivectors.h5f")
+    parser.add_argument("--output_name", type=str, default="ivector.h5f", help="name to output file (ivectors.h5f or lda_ivectors.h5f")
     parser.parse_args()
     args, leftovers = parser.parse_known_args()
 
