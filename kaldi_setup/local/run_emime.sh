@@ -283,13 +283,13 @@ fi
 
 # --- Figuring out LDA dims ---- Careful 
 if [ -z "$lda_dim_test_engfin" ]; then
-    num_spk_engfin=$(wc -l ${data}/test_eng-fin${feats_suffix}/spk2utt | cut -d' ' -f1)
+    num_spk_engfin=$(wc -l ${data}/${test_fin}${feats_suffix}/spk2utt | cut -d' ' -f1)
     lda_dim_test_engfin=$(($num_spk_engfin - 1))
     echo "lda_dim_test_engfin set to ${lda_dim_test_engfin}"
 fi
 
 if [ -z "$lda_dim_test_engger" ]; then
-    num_spk_engger=$(wc -l ${data}/test_eng-ger${feats_suffix}/spk2utt | cut -d' ' -f1)
+    num_spk_engger=$(wc -l ${data}/${test_ger}${feats_suffix}/spk2utt | cut -d' ' -f1)
     lda_dim_test_engger=$(($num_spk_engger - 1))
     echo "lda_dim_test_engger set to ${lda_dim_test_engger}"
 fi
