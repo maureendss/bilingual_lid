@@ -19,8 +19,13 @@ exp_suffix=""
 train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
 train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
 
-test_ger="test_eng-ger"
-test_fin="test_eng-fin"
+
+
+# TODO : NEED TO BE ABLE TO TRY ALL TEST SETS IN ONCE
+test_ger=test_eng-ger-mono
+test_fin=test_eng-fin-mono
+# test_ger="test_eng-ger-mono test_eng-ger-bil test_eng-ger-mixed"
+# test_fin="test_eng-fin-mono test_eng-fin-bil test_eng-fin-mixed"
 
 
 
@@ -37,7 +42,7 @@ lda_dim_train=  ###NUM OF SPEAKERS TO AUTOMATIZE. Not possible cause bigger than
 num_gauss=128
 ivector_dim=150
 
-abx_dir=../abx/kaldi_exps
+abx_dir=../abx/kaldi_exps_EMIME
 
 . ./cmd.sh
 . ./path.sh
@@ -114,7 +119,7 @@ if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
     for train in $train_fin $train_ger; do 
 
         diag_ubm=${exp_dir}/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}
-        if [ ! -f diag_ubm/final.dubm ]; then
+        if [ ! -f ${diag_ubm}/final.dubm ]; then
             echo "*** Training diag UBM with $train dataset ***"
             local/lid/train_diag_ubm.sh --cmd "$train_cmd --mem 20G" \
                                         --nj 10 --num-threads 8 \
@@ -245,7 +250,7 @@ if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ]; then
         # Same for train ger
         for train in $train_ger; do
 
-            for iv_type in ${train} ${test_fin}; do 
+            for iv_type in ${train} ${test_ger}; do 
 
                 ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
 
@@ -500,16 +505,16 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train_engfin}-train_ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
         
@@ -531,16 +536,16 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train_engger}-train_ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
         
