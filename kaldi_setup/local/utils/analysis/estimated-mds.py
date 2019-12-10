@@ -59,6 +59,8 @@ if __name__ == "__main__":
         ax.legend()
     plt.title(args.feats_file)
 
+
+    #SHOULD ALSO DO PER GENDER
     
     # plt.scatter(data_transformed[:,0],data_transformed[:,1]) 
     plt.savefig(args.output_fig)

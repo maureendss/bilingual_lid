@@ -1,4 +1,4 @@
- #!/usr/bin/env bash
+#!/usr/bin/env bash
 
 # File for first steps on IVector Experiments
 
@@ -104,8 +104,8 @@ fi
 # ----------------------------------------------------------------------
 
 if [ $stage -eq 2 ] || [ $stage -lt 2 ] && [ "${grad}" == "true" ]; then
-
-local/data_prep/combine_sets_emime.sh ${data}
+datasets_list="${test_ger} ${test_fin} ${train_ger} ${train_fin}"
+local/data_prep/combine_sets_emime.sh --datasets_list "${datasets_list}" ${data}
 
 fi
  
@@ -416,7 +416,6 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
             else
                 echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
             fi
-
 
             #create abx directories
             path_to_h5f=$(readlink -f ${ivec_dir}/${x}.h5f)

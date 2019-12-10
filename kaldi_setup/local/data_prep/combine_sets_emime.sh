@@ -1,7 +1,7 @@
  #!/usr/bin/env bash
 
 
-datasets_list="train_bil_eng-fin train_bil_eng-ger train_mix_eng-fin train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_fin train_mono_ger test_eng-fin test_eng-ger"
+datasets_list="train_bil_eng-fin train_bil_eng-ger train_mix_eng-fin train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_fin train_mono_ger test_eng-fin-mono test_eng-ger-mono test_eng-fin-mixed test_eng-ger-mixed test_eng-ger-bil test_eng-fin-bil"
 utt_lists_dir="../../data/emime/lists"
 
 . ./cmd.sh
