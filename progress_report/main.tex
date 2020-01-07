@@ -1,0 +1,159 @@
+
+
+%\documentclass[12pt]{article}
+\documentclass[12pt]{report}
+\setcounter{tocdepth}{3}% Include \subsubsection in ToC
+\setcounter{secnumdepth}{3}% Number \subsubsection
+
+
+\usepackage{setspace}
+\usepackage{wrapfig}
+
+\usepackage{tipa}
+\usepackage{hhline}
+\usepackage{blindtext}
+\usepackage{courier}
+\usepackage{hyperref}
+\usepackage{rotating}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    citecolor=blue
+}
+\usepackage{pdflscape}
+\usepackage{afterpage}
+\usepackage{capt-of}% or use the larger `caption` package
+
+\usepackage{graphicx}
+\usepackage[ labelfont=it, font={small}]{caption}
+\setlength{\belowcaptionskip}{-10pt}
+\graphicspath{ {images/} }
+\usepackage{multicol}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\usepackage{textcomp} % for angle brackets
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+ 
+% \usepackage[backend=biber, style=ieee]{biblatex}
+
+% \addbibresource{biblio.bib}
+\usepackage{csquotes}
+\usepackage{subcaption}
+%\usepackage{subfigure}
+
+%For highlighting
+\usepackage{color,soul}
+
+\usepackage{xcolor}
+\newcommand\todo[1]{\noindent \textcolor{red}{\textbf{\underline{TODO}:} #1}}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{natbib}
+% \setlength{\bibsep}{0pt plus 0.3ex}
+% \bibliography{references.bib}
+% \usepackage{natbib}
+% \usepackage[square,numbers]{natbib}
+% \bibliographystyle{abbrvnat}
+
+\usepackage{units} %for nice fractions
+\usepackage{fourier} % for the "\danger" command creating the warning sign. 
+
+
+
+
+%IE and EG commands
+\newcommand{\ie}{\textit{i}.\textit{e}. }
+\newcommand{\eg}{\textit{e}.\textit{g}. }
+
+
+%Glossary
+% glossary
+% \usepackage[xindy]{glossaries} 
+\usepackage[acronym]{glossaries}
+\input{glossary}
+\makeglossaries
+
+
+\usepackage{float}
+\usepackage{titling}
+
+\setlength{\droptitle}{-5em}   % This is your set screw
+
+
+
+% \usepackage{subfig}
+\usepackage{titlesec}
+    %\titlespacing\section{0pt}{6pt plus 4pt minus 3pt}{1pt plus 2pt minus 2pt}
+     \titlespacing\section{0pt}{10pt plus 4pt minus 2pt}{6pt plus 2pt minus 2pt}
+    \titlespacing\subection{0pt}{6pt plus 4pt minus 3pt}{1pt plus 2pt minus 2pt}
+% \titleformat*{\section}{\Large\bfseries}
+
+% \usepackage{biblatex}
+% \addbibresource{sample.bib}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{Maureen de Seyssel}
+\lhead{Progress Report}
+
+\begin{document}
+
+% \begin{titlepage}
+
+\renewcommand{\baselinestretch}{1.5}
+
+% \title{%
+% \hrulefill \\
+%   \textbf{Progress Report} \\
+%   \LARGE
+% \textbf{Research internship at \acrshort{coml} - \acrshort{lscp}} \\ Maureen de Seyssel \\ - \\ \large 11/2019 - 04/2020 \\
+% \hrulefill \vspace{-6em}}
+
+\title{%
+\hrulefill \\
+  \textbf{Progress Report} \\
+  \LARGE
+\textbf{Research internship at \acrshort{coml} - \acrshort{lscp}} \\ Maureen de Seyssel \\ - \\ \large 11/2019 - 04/2020 \\
+\hrulefill }
+
+\author{}
+\date{}
+
+\maketitle\vspace{-2cm}
+
+\thispagestyle{fancy}
+
+
+\tableofcontents
+%\newpage
+\printglossaries
+%\newpage
+
+%Sections
+
+\include{1-Introduction}
+\include{2-LID}
+\include{a-Appendices}
+%% ... etc ...
+
+
+%% Choose your favourite bibliography style here.
+\bibliographystyle{apalike}
+
+%% If you want the bibliography single-spaced (which is allowed), uncomment
+%% the next line.
+% \singlespace
+
+%% Specify the bibliography file. Default is thesis.bib.
+\bibliography{ref.bib}
+
+
+
+% \end{titlepage}
+
+\end{document}
