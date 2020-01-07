@@ -52,7 +52,7 @@ score_2=$(echo $l2 | cut -d' ' -f 4)
 if [ "$num_1" == "$num_2" ]; then
     echo |awk -v v1="$score_1" -v v2="$score_2" '{ print (v1+v2)/2 }' > $abx_dir/abx_byspk.avg
 else
-    echo |awk -v v1="$score_1" -v v2="$score_2" -v v3="${num_1}" -v v4="${num_2}"'{ print ((v1*v3)+(v2*v4))/(v3+v4) }' > $abx_dir/abx.avg
+    echo |awk -v v1="$score_1" -v v2="$score_2" -v v3="${num_1}" -v v4="${num_2}"'{ print ((v1*v3)+(v2*v4))/(v3+v4) }' > $abx_dir/abx_byspk.avg
     echo "Careful - not same number of utterances between two pairs. " >> $abx_dir/abx_byspk.avg
     
     echo "Not same number of utterances -> couldn't compute average abx score."

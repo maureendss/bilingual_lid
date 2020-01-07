@@ -369,16 +369,16 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test}-test_ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test}-test_ivector-mds.${extension};
+            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_test}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
-            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+            sbatch --mem=1G -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
         
