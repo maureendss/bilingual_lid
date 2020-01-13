@@ -7,6 +7,7 @@ mfcc_conf=mfcc.original.conf # mfcc configuration file. The "original" one attem
 stage=0
 grad=true
 nj=40
+nj_train=10
 data=data/emime #to chnge. Maybe make as complusory option?
 raw_data=../../data/emime
 no_speaker_info=false
@@ -122,7 +123,7 @@ if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
         if [ ! -f ${diag_ubm}/final.dubm ]; then
             echo "*** Training diag UBM with $train dataset ***"
             local/lid/train_diag_ubm.sh --cmd "$train_cmd --mem 20G" \
-                                        --nj 10 --num-threads 8 \
+                                        --nj ${nj_train} --num-threads 8 \
                                         --parallel_opts "" \
                                         --cmvn ${cmvn} --vad ${vad} \
                                         --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
@@ -165,7 +166,7 @@ if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
                 
                 #Same for full ubm - need to remove the cmn 
                 echo "*** Training full UBM with $train dataset ***"
-                local/lid/train_full_ubm.sh --nj 10 --cmd "$train_cmd" \
+                local/lid/train_full_ubm.sh --nj ${nj_train} --cmd "$train_cmd" \
                                             --cmvn ${cmvn} --vad ${vad} \
                                             --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
                                             ${data}/${train}${feats_suffix} \
@@ -199,6 +200,7 @@ if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
             echo "Training IVector Extractor for train set ${train}"
             
             local/lid/train_ivector_extractor.sh --cmd "$train_cmd --mem 2G" \
+                                                 --nj ${nj_train} \
                                                  --num-iters 5 --num_processes 1 \
                                                  --ivector_dim ${ivector_dim} \
                                                  --cmvn ${cmvn} --vad ${vad} \
