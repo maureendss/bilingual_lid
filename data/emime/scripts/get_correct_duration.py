@@ -6,7 +6,7 @@ from collections import defaultdict
 import random
 
 #WARNING TO NOT USE
-#NECESSITATE A SPECIAL "utt2spk_lang file instead of utt2spk with speaker as "FM3_ENG"
+#NECESSITATE A SPECIAL "utt2spk_lang file instead of utt2spk with speaker as "FM3_ENG" - important for bilingual train set. 
 
 def retrieve_meta(utt2dur, utt2spk):
 
@@ -82,14 +82,14 @@ def get_duration(max_dur, utt2dur_dict, utt2spk_dict, spk2utt_dict):
         left_pool = left_pool_1s + left_pool_0s
         while total_sum < max_dur - 3: #give a layoff of 5 seconds otherwise go over too muchOA
 
-            # try:
-            #     # sort per duration
-            #     utt = left_pool.pop()
-            #     final_utts.append(utt)
-            #     total_sum += utt2dur_dict[utt]
+            try:
+                # sort per duration
+                utt = left_pool.pop()
+                final_utts.append(utt)
+                total_sum += utt2dur_dict[utt]
                 
-            # except:
-            raise ValueError("Not enough utterances to match the goal max duration")
+            except:
+                raise ValueError("Not enough utterances to match the goal max duration")
 
     print("Final Total duration is of {} seconds".format(total_sum))
     return final_utts
