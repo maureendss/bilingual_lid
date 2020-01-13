@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 import pandas as pd
 
+
+
 # ADD COLOURS PER LANG
 #read from feats.scp
 #add feats scp direc
@@ -16,6 +18,7 @@ import pandas as pd
 if __name__ == "__main__":
     import argparse
 
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("feats_file", help="path to the ivector.scp we're going to use as example")
     parser.add_argument("utt2lang", help="...")
@@ -25,6 +28,7 @@ if __name__ == "__main__":
     parser.parse_args()
     args, leftovers = parser.parse_known_args()
 
+    
     # utt_dict=defaultdict(list)  
     utt2lang={}
     with open(args.utt2lang, 'r') as input_utt2lang:
@@ -84,13 +88,14 @@ if __name__ == "__main__":
             m='o'
 
         #HARDCODED
+
         if name[0] == "ENG":
             col="blue"
         else:
             col="orange"
         # ax.plot(group.x, group.y, marker='o', linestyle='', ms=6, label=name)
         ax.plot(group.x, group.y, marker=m, linestyle='', ms=6, color=col, label=name)
-        ax.legend()
+        ax.legend(loc='upper right')
     plt.title(args.feats_file)
 
 

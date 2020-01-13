@@ -524,33 +524,52 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
+            # echo "Creating MDS representations for ${tgt_dir}/ivector-mds.${extension}"
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+        # else
+        #     echo "${tgt_dir}/ivector-mds.${extension} already exists" 
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} ]; then
+            # echo "Creating MDS representations for ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension}"
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
+        # else
+            # echo "${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} already exists"
         fi
 
 
-        if [ ! -f ${tgt_dir}/lda-${lda_dim_train_engfin}-train_ivector-mds.${extension} ]; then
+        if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
+            # echo "Creating ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension}"
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+        # else
+        #     echo "${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} already exists"
         fi
 
 
         test_utt2gender=${data}/${test_fin}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
-        # if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
+        #echo "sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension}"
+        if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
+            # echo "Creating ${tgt_dir}/ivector-mds_gender.${extension}"
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
-        # fi
+        # else
+        #     echo "${tgt_dir}/ivector-mds_gender.${extension} already exists"
+         fi
 
-        # if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} ]; then
+        if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} ]; then
+            # echo "Creating ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension}" # 
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension};
-        # fi
+        # else
+        #     echo "${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} already exists"
+        fi
 
 
-        # if [ ! -f ${tgt_dir}/lda-${lda_dim_train_engfin}-train_ivector-mds_gender.${extension} ]; then
+        if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension} ]; then
+            # echo "Creating ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension}"
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension};
-        # fi
+        # else
+        #     echo "${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension} already exists"
+        fi
 
 
         
@@ -580,25 +599,25 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         fi
 
 
-        if [ ! -f ${tgt_dir}/lda-${lda_dim_train_engger}-train_ivector-mds.${extension} ]; then
+        if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
 
         test_utt2gender=${data}/${test_ger}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
-        # if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
+         if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
-        # fi
+         fi
 
-        # if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension} ]; then
+         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension};
-        # fi
+         fi
 
 
-        # if [ ! -f ${tgt_dir}/lda-${lda_dim_train_engger}-train_ivector-mds_gender.${extension} ]; then
+         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension};
-        # fi
+         fi
 
 
         
