@@ -1,0 +1,3 @@
+In this exp, 6 spkers in train and 1 only in test (except for the mixed one)
+And also because so little speakers, to still have 400 setneces in test, we got sentences repetitions.
+Also created a test set with 144 sentences only so that no repet (best we can do)

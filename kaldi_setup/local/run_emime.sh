@@ -10,12 +10,13 @@ nj=40
 nj_train=10
 data=data/emime #to chnge. Maybe make as complusory option?
 raw_data=../../data/emime
+raw_data_lists=../../data/emime/lists
 no_speaker_info=false
 prepare_abx=true
 exp_dir=exp_emime
 
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
-exp_suffix=""
+exp_suffix="" #redundant with exp_dir? TODO to change
 
 train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
 train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
@@ -106,7 +107,7 @@ fi
 
 if [ $stage -eq 2 ] || [ $stage -lt 2 ] && [ "${grad}" == "true" ]; then
 datasets_list="${test_ger} ${test_fin} ${train_ger} ${train_fin}"
-local/data_prep/combine_sets_emime.sh --datasets_list "${datasets_list}" ${data}
+local/data_prep/combine_sets_emime.sh --utt_lists_dir ${raw_data_lists} --datasets_list "${datasets_list}" ${data}
 
 fi
  
@@ -401,7 +402,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
         #create ivectors.item #TODO ADD SLURM
         if [ ! -f ${ivec_dir}/ivectors.item ]; then
             echo "** Creating ${ivec_dir}/ivectors.item **"
-            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
+            sbatch --mem=1G -n 1 -o ${ivec_dir}/log/utt2lang_to_item.log python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
         fi
  
 
@@ -413,7 +414,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
                 echo " Should be in ${ivec_dir}/${x}.h5f"
                 rm -rf ${ivec_dir}/tmp
                 rm -f ${ivec_dir}/${x}.h5f
-                sbatch --mem=1G -n 5 local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2h5f_${x}.log local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
                 while [ ! -f ${ivec_dir}/${x}.h5f ]; do sleep 0.5; done
             else
                 echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
@@ -421,7 +422,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
 
             if [ ! -f ${ivec_dir}/${x}.csv ]; then
                 echo "** Creating ivectors.csv file for for ${ivec_dir}/** for ${x}"
-                sbatch --mem=1G -n 5 local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2csv_${x}.log local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
                 while [ ! -f ${ivec_dir}/${x}.csv ]; do sleep 0.1; done
             fi
             
@@ -430,7 +431,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
             path_to_h5f=$(readlink -f ${ivec_dir}/${x}.h5f)
             path_to_item=$(readlink -f ${ivec_dir}/ivectors.item)
             path_to_csv=$(readlink -f ${ivec_dir}/${x}.csv)
-            tgt_abx_dir=${abx_dir}${exp_suffix}/${x}_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}
+            tgt_abx_dir=${abx_dir}${exp_suffix}/${x}_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}
 
             echo "** Creating abx directories in ${tgt_abx_dir} **"
             # rm -f ${tgt_abx_dir}/ivectors.*
@@ -459,7 +460,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
         #create ivectors.item #TODO ADD SLURM
         if [ ! -f ${ivec_dir}/ivectors.item ]; then
             echo "** Creating ${ivec_dir}/ivectors.item **"
-            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
+            sbatch --mem=1G -n 1 -o ${ivec_dir}/log/utt2lang_to_item.log python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
         fi
  
 
@@ -471,7 +472,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
                 echo " Should be in ${ivec_dir}/${x}.h5f"
                 rm -rf ${ivec_dir}/tmp
                 rm -f ${ivec_dir}/${x}.h5f
-                sbatch --mem=1G -n 5 local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2h5f_${x}.log local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
                 while [ ! -f ${ivec_dir}/${x}.h5f ]; do sleep 0.5; done
             else
                 echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
@@ -479,7 +480,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
 
             if [ ! -f ${ivec_dir}/${x}.csv ]; then
                 echo "** Creating ivectors.csv file for for ${ivec_dir}/** for ${x}"
-                sbatch --mem=1G -n 5 local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2csv_${x}.log local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
                 while [ ! -f ${ivec_dir}/${x}.csv ]; do sleep 0.1; done
             fi
             
@@ -509,7 +510,7 @@ fi
 
 ## Data analysis
 if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
-    
+    # TODO : FIX MDS GRAPH FOR NON GENDER
     for train in ${train_fin}; do
 
         num_spk_train=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
@@ -526,51 +527,32 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            # echo "Creating MDS representations for ${tgt_dir}/ivector-mds.${extension}"
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
-        # else
-        #     echo "${tgt_dir}/ivector-mds.${extension} already exists" 
+            sbatch --mem=5G -o ${tgt_dir}/log/ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} ]; then
-            # echo "Creating MDS representations for ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension}"
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
-        # else
-            # echo "${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} already exists"
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_test_engfin}-test_ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
-            # echo "Creating ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension}"
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
-        # else
-        #     echo "${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} already exists"
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
 
         test_utt2gender=${data}/${test_fin}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
-        #echo "sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension}"
         if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
-            # echo "Creating ${tgt_dir}/ivector-mds_gender.${extension}"
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
-        # else
-        #     echo "${tgt_dir}/ivector-mds_gender.${extension} already exists"
+            sbatch --mem=5G -o ${tgt_dir}/log/ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
          fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} ]; then
-            # echo "Creating ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension}" # 
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension};
-        # else
-        #     echo "${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} already exists"
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.log local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension} ]; then
-            # echo "Creating ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension}"
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension};
-        # else
-        #     echo "${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension} already exists"
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension};
         fi
 
 
@@ -593,32 +575,32 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension} ]; then
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_test_engger}-test_ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
 
         test_utt2gender=${data}/${test_ger}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
          if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
+            sbatch --mem=5G  -o ${tgt_dir}/log/ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
          fi
 
          if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension} ]; then
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension};
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_test_engger}-test_ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension};
          fi
 
 
          if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension} ]; then
-            sbatch --mem=5G -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension};
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds_gender.${extension};
          fi
 
 
