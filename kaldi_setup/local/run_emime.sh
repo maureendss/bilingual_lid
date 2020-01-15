@@ -46,6 +46,12 @@ ivector_dim=150
 
 abx_dir=../abx/kaldi_exps_EMIME
 
+
+#Additional setup
+run_inversed_lda=false
+inv_lda=5
+
+
 . ./cmd.sh
 . ./path.sh
 . utils/parse_options.sh
@@ -62,7 +68,7 @@ if [ $stage -eq 0 ] || [ $stage -lt 0 ] && [ "${grad}" == "true" ]; then
     #Explain how get the raw data?
     
     echo "**** Preparing main 'all' data ****"
-    ./local/data_prep/prepare_emime.sh --no_speaker_info ${no_speaker_info} ${raw_data}/wavs $data/all/${feats_suffix}
+    ./local/data_prep/prepare_emime.sh --no_speaker_info ${no_speaker_info} ${raw_data}/wavs $data/all${feats_suffix}
 
 fi
 
@@ -402,7 +408,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
         #create ivectors.item #TODO ADD SLURM
         if [ ! -f ${ivec_dir}/ivectors.item ]; then
             echo "** Creating ${ivec_dir}/ivectors.item **"
-            sbatch --mem=1G -n 1 -o ${ivec_dir}/log/utt2lang_to_item.log python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
+            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
         fi
  
 
@@ -460,7 +466,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
         #create ivectors.item #TODO ADD SLURM
         if [ ! -f ${ivec_dir}/ivectors.item ]; then
             echo "** Creating ${ivec_dir}/ivectors.item **"
-            sbatch --mem=1G -n 1 -o ${ivec_dir}/log/utt2lang_to_item.log python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
+            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
         fi
  
 
@@ -606,8 +612,5 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
         
     done;
-
-
-
 
 fi
