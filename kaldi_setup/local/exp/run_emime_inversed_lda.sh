@@ -18,14 +18,14 @@ exp_dir=exp_emime
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
 
-train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
-train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
+train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger train_mix_spkmatch_eng-ger" #all datasets related to eng-ger train sets
+train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin train_mix_spkmatch_eng-fin"
 
 
 
 # TODO : NEED TO BE ABLE TO TRY ALL TEST SETS IN ONCE
-test_ger=test_eng-ger-mono
-test_fin=test_eng-fin-mono
+test_ger=test_eng-ger-bil
+test_fin=test_eng-fin-bil
 # test_ger="test_eng-ger-mono test_eng-ger-bil test_eng-ger-mixed"
 # test_fin="test_eng-fin-mono test_eng-fin-bil test_eng-fin-mixed"
 
@@ -305,7 +305,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         test_utt2lang=${data}/${test_fin}${feats_suffix}/utt2lang;
 
 
-        if [ ${inversed_lda_dim} -lt {lda_dim_test_engfin} ] && [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} ]; then
+        if [ ${inversed_lda_dim} -lt ${lda_dim_test_engfin} ] && [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} ]; then
             sbatch --mem=5G -n 1 -o ${tgt_dir}/log/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
         fi
 
@@ -318,7 +318,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         test_utt2gender=${data}/${test_fin}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
 
-        if [ ${inversed_lda_dim} -lt {lda_dim_test_engfin} ] && [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} ]; then
+        if [ ${inversed_lda_dim} -lt ${lda_dim_test_engfin} ] && [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G -n 1 -o ${tgt_dir}/log/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds_gender.log local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engfin}-test_ivector-mds_gender.${extension};
         fi
 
@@ -346,7 +346,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         test_utt2lang=${data}/${test_ger}${feats_suffix}/utt2lang;
 
 
-        if [ ${inversed_lda_dim} -lt {lda_dim_test_engfin} ] &&  [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds.${extension} ]; then
+        if [ ${inversed_lda_dim} -lt ${lda_dim_test_engfin} ] &&  [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds.${extension} ]; then
             sbatch --mem=5G -o ${tgt_dir}/log/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
         fi
 
@@ -359,7 +359,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         test_utt2gender=${data}/${test_ger}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
 
-        if [ ${inversed_lda_dim} -lt {lda_dim_test_engfin} ] && [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension} ]; then
+        if [ ${inversed_lda_dim} -lt ${lda_dim_test_engfin} ] && [ ! -f ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G -o ${tgt_dir}/log/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/inversed-${inversed_lda_dim}_lda-${lda_dim_test_engger}-test_ivector-mds_gender.${extension};
         fi
 

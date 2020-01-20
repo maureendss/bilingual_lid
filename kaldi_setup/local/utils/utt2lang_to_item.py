@@ -37,11 +37,25 @@ if __name__ == "__main__":
         for line in input_utt2spk:
             utt2spk_dict[line.split(' ')[0]] = line.split(' ')[1].strip('\n')
 
-            
+
+    if os.path.isfile("{}/utt2sent".format(args.datadir)):
+        with open("{}/utt2sent".format(args.datadir), 'r') as input_utt2sent:
+            utt2sent_dict={}
+            for line in input_utt2sent:
+                utt2sent_dict[line.split(' ')[0]] = line.split(' ')[1].strip('\n')
+
+    
     utt_list = sorted(list(utt2lang_dict.keys()))
     with open('{}/ivectors.item'.format(args.output_dir), 'w') as output:
-        output.write('#file onset offset #lang spk\n')
+        if os.path.isfile("{}/utt2sent".format(args.datadir)):
+            output.write('#file onset offset #lang spk sent\n')
+        else:
+            output.write('#file onset offset #lang spk\n')
+            
         for utt in utt_list:
-            output.write("{} {} {} {} {}\n".format(utt, 0, args.ivector_dim, utt2lang_dict[utt], utt2spk_dict[utt]))
+            if os.path.isfile("{}/utt2sent".format(args.datadir)):
+                output.write("{} {} {} {} {} {}\n".format(utt, 0, args.ivector_dim, utt2lang_dict[utt], utt2spk_dict[utt], utt2sent_dict[utt]))    
+            else:
+                output.write("{} {} {} {} {}\n".format(utt, 0, args.ivector_dim, utt2lang_dict[utt], utt2spk_dict[utt]))
         
         

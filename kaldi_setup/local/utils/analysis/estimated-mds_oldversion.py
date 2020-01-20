@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("feats_file", help="path to the ivector.scp we're going to use as example")
-    parser.add_argument("utt2lang", help="...")
+    parser.add_argument("utt2lang", help="can also be utt2spk / utt2sent")
     parser.add_argument("output_fig", help="...")
 
     parser.parse_args()
