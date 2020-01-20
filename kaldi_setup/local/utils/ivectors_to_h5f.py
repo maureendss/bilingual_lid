@@ -38,10 +38,10 @@ if __name__ == "__main__":
         times=np.array([0])  
         for key, numpy_array in reader: 
             filenames.append(key)
-            ivector_2d = np.expand_dims(numpy_array, axis=0) 
+            ivector_2d = np.expand_dims(numpy_array.astype(np.float64), axis=0) 
             np.savez('{}/tmp/{}'.format(args.target_dir, key), features=ivector_2d, time=times)
-            
-    any2h5features.convert('{}/tmp'.format(args.target_dir), '{}/{}'.format(args.target_dir, args.output_name))
+
+    any2h5features.convert('{}/tmp/'.format(args.target_dir), '{}/{}'.format(args.target_dir, args.output_name))
 
     
     shutil.rmtree('{}/tmp'.format(args.target_dir))
