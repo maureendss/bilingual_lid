@@ -65,7 +65,7 @@ def get_purity_range(c_range, data, label_data, linkage_proc='ward'):
     return purity_range
 
 
-def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None ):
+def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None , legend_loc='right'):
     #ivec_names i s a list of length of purity_list, with the name of each ivector for the legend
     #purity is of form [[(c_a1,purity_a1)(c_a2, purity_a2)],[(c_b1,purity_b1)(c_b2, purity_b2)]]
     #style_list is a list of same size as the purity list with tuple of color and linestyle. eg: [('r','--'), ('b', '-')]
@@ -85,13 +85,24 @@ def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None ):
             x, y = zip(*group) # unpack a list of pairs into two tuples
             plt.plot(x, y, label=label)
 
-#    plt.legend()    
-#    plt.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=2)
-    lgd = plt.legend(bbox_to_anchor=(1, 0.5), loc='center left')
+            #    plt.legend()    
+            #    plt.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=2)
+
+    if legend_loc == 'right':
+        lgd = plt.legend(bbox_to_anchor=(1, 0.5), loc='center left')
+    elif legend_loc == 'bottom':
+        lgd = plt.legend(bbox_to_anchor=(0.5, -0.05), loc='upper center')
+    elif legend_loc == 'auto':
+        lgd = plt.legend()
+    
+    else:
+        raise ValueError
     plt.ylabel('{} purity'.format(label_name))
     plt.xlabel('Number of clusters')
     plt.savefig(out_fig,bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
+
+
 # if __name__ == "__main__":
 #     import argparse
 
@@ -116,18 +127,3 @@ def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None ):
 #     #ivectors_df = pd.DataFrame.from_dict(ivectors, orient='index')
 
 
-
-
-ivecs = ['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_mix_eng-ger_ts-train_mix_eng-ger/ivector.scp', 'exp_emime/ivectors-deltassdc/ivectors_128_tr-train_mix_eng-fin_ts-train_mix_eng-fin/ivector.scp', 'exp_emime/ivectors-deltassdc/ivectors_128_tr-train_bil_eng-ger_ts-train_bil_eng-ger/ivector.scp', 'exp_emime/ivectors-deltassdc/ivectors_128_tr-train_bil_eng-fin_ts-train_bil_eng-fin/ivector.scp']
-
-data_dirs= ['data/emime/train_mix_eng-ger', 'data/emime/train_mix_eng-fin', 'data/emime/train_bil_eng-ger', 'data/emime/train_bil_eng-fin']
-ivecs_names=['mix_eng-ger', 'mix_eng-fin', 'bil_eng-ger', 'bil_eng-fin']
-style_list=[('r','-.'), ('b', '-.'), ('r',':'), ('b', ':')]
-
-
-purity_list=[]
-for ivec_scp, datadir in zip(ivecs, data_dirs):
-    ivectors_df, labels_df = prepare_data(ivec_scp, datadir)
-    purity_list.append(get_purity_range((2,20), np.array(ivectors_df), labels_df['lang']))
-
-plot_purity(purity_list, 'tmp.svg', ivecs_names, 'lang', style_list=style_list) 
