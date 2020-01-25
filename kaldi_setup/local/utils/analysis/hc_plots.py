@@ -28,12 +28,16 @@ if __name__ == '__main__' :
     # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     # Create Train plots per lang
     ivecs_names=['mix_spkmatch_eng-ger', 'mix_spkmatch_eng-fin', 'bil_eng-ger', 'bil_eng-fin']
-    ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]                                                                       
-    data_dirs=['data/emime/train_{}'.format(n) for n in ivecs_names]     
+    # ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
+    ivecs=['exp_emime/vltn/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
+
+    # data_dirs=['data/emime/train_{}'.format(n) for n in ivecs_names]
+    data_dirs=['data/emime/vltn/train_{}'.format(n) for n in ivecs_names]
     # style_list=[('r','-.'), ('b', '-.'), ('r',':'), ('b', ':')]
     style_list=[('r','-.'), ('r', ':'), ('b','-.'), ('b', ':')]
     label='lang'
-    out_fig='figs/hc/emime-deltassdc/hc_train_lang.pdf'
+    # out_fig='figs/hc/emime-deltassdc/hc_train_lang.pdf'
+    out_fig='figs/hc/vltn/emime-deltassdc/hc_train_lang.pdf'
     prange=(2,20)
     
     run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list)
@@ -43,11 +47,15 @@ if __name__ == '__main__' :
     #### Create Train plots per spk. USE spkmatch this time as need all same number of spks.
     
     ivecs_names=['mono_eng_native', 'mono_eng', 'mono_ger', 'mono_fin', 'mix_spkmatch_eng-ger', 'mix_spkmatch_eng-fin', 'bil_eng-ger', 'bil_eng-fin']
-    ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
-    data_dirs=['data/emime/train_{}'.format(n) for n in ivecs_names]
+    # ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
+    ivecs=['exp_emime/vltn/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
+
+    # data_dirs=['data/emime/train_{}'.format(n) for n in ivecs_names]
+    data_dirs=['data/emime/vltn/train_{}'.format(n) for n in ivecs_names]
     style_list=[('g', '-'), ('g', '--'), ('g', '-.'), ('g', ':'), ('r','-.'), ('r', ':'), ('b','-.'), ('b', ':')]
     label='spk'
-    out_fig='figs/hc/emime-deltassdc/hc_train_spk.pdf'
+    # out_fig='figs/hc/emime-deltassdc/hc_train_spk.pdf'
+    out_fig='figs/hc/vltn/emime-deltassdc/hc_train_spk.pdf'
     prange=(12,30)
     
     run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list)
@@ -57,55 +65,59 @@ if __name__ == '__main__' :
     #### Create Train plots per SENT
     
     ivecs_names=['mix_spkmatch_eng-ger', 'mix_spkmatch_eng-fin', 'bil_eng-ger', 'bil_eng-fin']
-    ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]                                                                       
-    data_dirs=['data/emime/train_{}'.format(n) for n in ivecs_names]     
+    # ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
+    ivecs=['exp_emime/vltn/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-train_{}/ivector.scp'.format(n, n) for n in ivecs_names]
+
+    # data_dirs=['data/emime/train_{}'.format(n) for n in ivecs_names]
+    data_dirs=['data/emime/vltn/train_{}'.format(n) for n in ivecs_names]
     style_list=[('r','-.'), ('r', ':'), ('b','-.'), ('b', ':')]
     label='sent'
-    out_fig='figs/hc/emime-deltassdc/hc_train_sent.pdf'
+    # out_fig='figs/hc/emime-deltassdc/hc_train_sent.pdf'
+    out_fig='figs/hc/vltn/emime-deltassdc/hc_train_sent.pdf'
     prange=(280,320)
     
     run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list)
     
     
-    ######### TEST #############
+    # ######### TEST #############
     
-    #----------------------------
-    #------- LANG ---------------
+    # #----------------------------
+    # #------- LANG ---------------
     
-    for lang in ['fin', 'ger']:
-        for t_type in ['bil', 'mono']:
+    # for lang in ['fin', 'ger']:
+    #     for t_type in ['bil', 'mono']:
 
-            # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #         # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
             
-            ivecs_names=['mono_eng_native', 'mono_eng','mono_{}'.format(lang),'mix_spkmatch_eng-{}'.format(lang), 'bil_eng-{}'.format(lang)]
-            ivecs_test_name='test_eng-{}-{}'.format(lang,t_type)
-            ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-{}/ivector.scp'.format(n, ivecs_test_name) for n in ivecs_names]                                                                       
-            data_dirs=['data/emime/{}'.format(ivecs_test_name)]*len(ivecs_names)     
-            style_list=[('g','-'), ('g', '--'), ('g', '-.'),('r', ':'), ('b',':')]
-            label='lang'
-            out_fig='figs/hc/emime-deltassdc/hc_test_{}_lang_eng-{}.pdf'.format(t_type, lang)
-            prange=(2,20)
+    #         ivecs_names=['mono_eng_native', 'mono_eng','mono_{}'.format(lang),'mix_spkmatch_eng-{}'.format(lang), 'bil_eng-{}'.format(lang)]
+    #         ivecs_test_name='test_eng-{}-{}'.format(lang,t_type)
+    #         ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-{}/ivector.scp'.format(n, ivecs_test_name) for n in ivecs_names]                                                                       
+    #         data_dirs=['data/emime/{}'.format(ivecs_test_name)]*len(ivecs_names)     
+    #         style_list=[('g','-'), ('g', '--'), ('g', '-.'),('r', ':'), ('b',':')]
+    #         label='lang'
+    #         out_fig='figs/hc/emime-deltassdc/hc_test_{}_lang_eng-{}.pdf'.format(t_type, lang)
+    #         prange=(2,20)
             
-            run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list, legend_loc = 'auto')
+    #         run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list, legend_loc = 'auto')
             
             
-    #----------------------------
-    #------- SPK ---------------
+    # #----------------------------
+    # #------- SPK ---------------
     
-    for lang in ['fin', 'ger']:
-        for t_type in ['bil', 'mono']:
-            # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-            #### Create Test plots per lang - ENG-GER
-            ivecs_names=['mono_eng_native', 'mono_eng','mono_{}'.format(lang),'mix_spkmatch_eng-{}'.format(lang), 'bil_eng-{}'.format(lang)]
-            ivecs_test_name='test_eng-{}-{}'.format(lang,t_type)
-            ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-{}/ivector.scp'.format(n, ivecs_test_name) for n in ivecs_names]                                                                       
-            data_dirs=['data/emime/{}'.format(ivecs_test_name)]*len(ivecs_names)     
-            style_list=[('g','-'), ('g', '--'), ('g', '-.'),('r', ':'), ('b',':')]
-            label='spk'
-            out_fig='figs/hc/emime-deltassdc/hc_test_{}_spk_eng-{}.pdf'.format(t_type, lang)
-            if t_type == 'bil':
-                prange=(2,20)
-            else:
-                prange=(4,20)
+    # for lang in ['fin', 'ger']:
+    #     for t_type in ['bil', 'mono']:
+    #         # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #         #### Create Test plots per lang - ENG-GER
+    #         ivecs_names=['mono_eng_native', 'mono_eng','mono_{}'.format(lang),'mix_spkmatch_eng-{}'.format(lang), 'bil_eng-{}'.format(lang)]
+    #         ivecs_test_name='test_eng-{}-{}'.format(lang,t_type)
+    #         ivecs=['exp_emime/ivectors-deltassdc/ivectors_128_tr-train_{}_ts-{}/ivector.scp'.format(n, ivecs_test_name) for n in ivecs_names]                                                                       
+    #         data_dirs=['data/emime/{}'.format(ivecs_test_name)]*len(ivecs_names)     
+    #         style_list=[('g','-'), ('g', '--'), ('g', '-.'),('r', ':'), ('b',':')]
+    #         label='spk'
+    #         out_fig='figs/hc/emime-deltassdc/hc_test_{}_spk_eng-{}.pdf'.format(t_type, lang)
+    #         if t_type == 'bil':
+    #             prange=(2,20)
+    #         else:
+    #             prange=(4,20)
                 
-            run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list, legend_loc = 'auto')
+    #         run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=style_list, legend_loc = 'auto')

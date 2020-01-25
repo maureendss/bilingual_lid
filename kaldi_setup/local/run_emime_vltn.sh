@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # File for first steps on IVector Experiments
-
+# Equivqlent to run_emime.sh but for vltn version. 
 
 mfcc_conf=mfcc.original.conf # mfcc configuration file. The "original" one attempts to reproduce the settings in julia's experiments. 
 stage=0
 grad=true
-nj=40
-nj_train=10
+nj=50
+nj_train=12
 data=data/emime #to chnge. Maybe make as complusory option?
 raw_data=../../data/emime
 raw_data_lists=../../data/emime/lists
@@ -18,8 +18,8 @@ exp_dir=exp_emime
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
 
-train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
-train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
+train_ger="train_bil_eng-ger train_mix_eng-ger train_mix_spkmatch_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
+train_fin="train_bil_eng-fin train_mix_eng-fin train_mix_spkmatch_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
 
 
 
@@ -84,7 +84,7 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ]; then
 
 
     
-    mfcc_conf=conf/mfcc.original.conf
+
 
     for x in all; do
 
@@ -118,13 +118,210 @@ datasets_list="${test_ger} ${test_fin} ${train_ger} ${train_fin}"
 local/data_prep/combine_sets_emime.sh --utt_lists_dir ${raw_data_lists} --datasets_list "${datasets_list}" ${data}
 
 fi
- 
+
+
 
 # ----------------------------------------------------------------------
-#Stage 3 : Diagonal UBM Training
+#Stage 3 : Diagonal UBM Training - only used to extract vltn.
 # ----------------------------------------------------------------------
 
+#use the full training sets for vltn as already very small vltn set. 
+# also use the same mfcc conf (need at last 13 coeffs but already the case)
+# also mfcc with vltn extraction. 
 if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
+
+    for train in $train_fin $train_ger; do 
+
+        diag_ubm=${exp_dir}/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}
+        if [ ! -f ${diag_ubm}/final.dubm ]; then
+            echo "*** Training diag UBM with $train dataset ***"
+            local/lid/train_diag_ubm.sh --cmd "$train_cmd --mem 20G" \
+                                        --nj ${nj_train} --num-threads 8 \
+                                        --parallel_opts "" \
+                                        --cmvn ${cmvn} --vad ${vad} \
+                                        --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                        ${data}/${train}${feats_suffix} ${num_gauss} \
+                                        ${diag_ubm}
+
+            #TODO : use feat_opts to retrieve feat opts for future scripts. 
+            printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${diag_ubm}/feat_opts
+        else
+            echo "*** diag UBM with $train dataset already exists - skipping ***"
+        fi
+
+        vltn_model=${exp_dir}/vltn/vltn_models${exp_suffix}/vltn_diag-ubm_${num_gauss}_${train}${feats_suffix}
+        if [ ! -f ${vltn_model}/final.lvtln ]; then #prob not right name
+            echo "*** Training VLTN model with $train dataset ***"
+            local/lid/train_lvtln_model.sh --cmd "$train_cmd --mem 20G" \
+                                           --mfcc-config conf/${mfcc_conf} \
+                                           --nj ${nj_train} \
+                                           --cmvn ${cmvn} --vad ${vad} \
+                                           --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                           ${data}/${train}${feats_suffix} \
+                                           ${diag_ubm} ${vltn_model}
+        fi
+
+            
+            
+    done
+fi
+
+
+
+# ----------------------------------------------------------------------
+#Stage 4 : Extract VLTN feats
+# ----------------------------------------------------------------------
+
+if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
+
+    for t in ${train_fin} ${train_ger}; do
+
+        mkdir -p ${data}/vltn/$t${feats_suffix}
+
+        #do we need to give feats.scp?
+        for x in ${data}/$t${feats_suffix}/{utt2*,wav.scp,frame_shift,cmvn.scp,spk2utt}; do
+            if [ ! -f ${data}/vltn/$t${feats_suffix}/$(basename $x) ]; then
+                cp ${x} ${data}/vltn/$t${feats_suffix}/
+            fi
+        done
+    done
+
+echo "-----------------"
+    
+    for train in $train_fin; do 
+        
+        vltn_model=${exp_dir}/vltn/vltn_models${exp_suffix}/vltn_diag-ubm_${num_gauss}_${train}${feats_suffix}
+
+        if [ ! -f ${data}/vltn/$train${feats_suffix}/utt2warp ]; then
+            local/lid/get_vtln_warps.sh --nj ${nj_train} --cmd "$train_cmd" \
+                                        --cmvn ${cmvn} --vad ${vad} \
+                                        --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                        ${data}/${train}${feats_suffix} ${vltn_model} ${vltn_model}/${train}${feats_suffix}_warp
+            cp ${vltn_model}/${train}${feats_suffix}_warp/utt2warp ${data}/vltn/$train${feats_suffix}
+        fi
+
+
+        for tst in ${test_fin}; do
+
+
+            test_data_vltn=${data}/vltn/${tst}_tr-${train}${feats_suffix}
+            mkdir -p ${test_data_vltn}
+            echo 'wwwww'
+            echo $test_data_vltn
+            for x in ${data}/$tst${feats_suffix}/{utt2*,wav.scp,frame_shift,cmvn.scp,spk2utt}; do
+                if [ ! -f ${test_data_vltn}/$(basename $x) ]; then
+                    cp ${x} ${test_data_vltn}/
+                fi
+            done
+
+            if [ ! -f ${test_data_vltn}/utt2warp ]; then
+                local/lid/get_vtln_warps.sh --nj $(wc -l ${test_data_vltn}/spk2utt | cut -d' ' -f1) --cmd "$train_cmd" \
+                                                                                       --cmvn ${cmvn} --vad ${vad} \
+                                                                                       --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                                                                       ${data}/${tst}${feats_suffix} ${vltn_model} ${vltn_model}/${tst}${feats_suffix}_warp
+                cp ${vltn_model}/${tst}${feats_suffix}_warp/utt2warp ${data}/vltn/${tst}_tr-${train}${feats_suffix}
+            fi
+
+            
+        done
+        
+    done
+
+
+    for train in $train_ger; do 
+
+        vltn_model=${exp_dir}/vltn/vltn_models${exp_suffix}/vltn_diag-ubm_${num_gauss}_${train}${feats_suffix}
+
+        if [ ! -f ${data}/vltn/$train${feats_suffix}/utt2warp ]; then 
+            local/lid/get_vtln_warps.sh --nj ${nj_train} --cmd "$train_cmd" \
+                                        --cmvn ${cmvn} --vad ${vad} \
+                                        --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                        ${data}/${train}${feats_suffix} ${vltn_model} ${vltn_model}/${train}${feats_suffix}_warp
+            cp ${vltn_model}/${train}${feats_suffix}_warp/utt2warp ${data}/vltn/$train${feats_suffix}
+        fi
+
+        for tst in ${test_ger}; do
+
+            test_data_vltn=${data}/vltn/${tst}_tr-${train}${feats_suffix}
+            mkdir -p ${test_data_vltn}
+            for x in ${data}/$tst${feats_suffix}/{utt2*,wav.scp,frame_shift,cmvn.scp,spk2utt}; do
+                if [ ! -f ${test_data_vltn}/$(basename $x) ]; then
+                    cp ${x} ${test_data_vltn}/
+                fi
+            done
+
+            if [ ! -f ${test_data_vltn}/utt2warp ]; then 
+                local/lid/get_vtln_warps.sh --nj $(wc -l ${test_data_vltn}/spk2utt | cut -d' ' -f1) --cmd "$train_cmd" \
+                                            --cmvn ${cmvn} --vad ${vad} \
+                                            --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                            ${data}/${tst}${feats_suffix} ${vltn_model} ${vltn_model}/${tst}${feats_suffix}_warp
+
+                cp ${vltn_model}/${tst}${feats_suffix}_warp/utt2warp ${data}/vltn/${tst}_tr-${train}${feats_suffix}
+            fi
+        done
+        
+    done
+    
+fi
+
+
+# ----------------------------------------------------------------------
+#Stage 5 : Extract VLTN feats
+# ----------------------------------------------------------------------
+
+if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
+
+    for t in $train_fin; do
+
+        if [ ! -f ${data}/vltn/${t}${feats_suffix}/feats.scp ]; then 
+            steps/make_mfcc.sh --mfcc-config conf/${mfcc_conf} --cmd "${train_cmd}" --nj ${nj_train} \
+                               ${data}/vltn/${t}${feats_suffix}
+        fi
+
+        if [ ! -f ${data}/vltn/${test_fin}_tr-${t}${feats_suffix}/feats.scp ]; then                                                                                                                      echo 'xxxxxxx'
+            steps/make_mfcc.sh --mfcc-config conf/${mfcc_conf} --cmd "${train_cmd}" --nj $(wc -l ${data}/vltn/${test_fin}_tr-${t}${feats_suffix}/spk2utt | cut -d' ' -f1) ${data}/vltn/${test_fin}_tr-${t}${feats_suffix}
+        fi 
+
+    done
+
+
+
+        for t in $train_ger; do
+
+        if [ ! -f ${data}/vltn/${t}${feats_suffix}/feats.scp ]; then 
+            steps/make_mfcc.sh --mfcc-config conf/${mfcc_conf} --cmd "${train_cmd}" --nj ${nj_train} \
+                               ${data}/vltn/${t}${feats_suffix}
+        fi
+
+        if [ ! -f ${data}/vltn/${test_ger}_tr-${t}${feats_suffix}/feats.scp ]; then                                                                                                                      
+            steps/make_mfcc.sh --mfcc-config conf/${mfcc_conf} --cmd "${train_cmd}" --nj $(wc -l ${data}/vltn/${test_ger}_tr-${t}${feats_suffix}/spk2utt | cut -d' ' -f1) ${data}/vltn/${test_ger}_tr-${t}${feats_suffix}                                                                                                
+        fi 
+
+    done
+    
+    
+fi
+
+
+
+#-----------
+# change exp dir and data dir to add vltn:
+exp_dir=${exp_dir}/vltn
+data=${data}/vltn
+abx_dir=${abx_dir}/vltn
+
+echo "****** vltn experiments are in ${exp_dir} and vltn data in ${data} ******"
+#--------------
+
+
+
+
+
+# ----------------------------------------------------------------------
+#Stage 5 : Diagonal UBM Training
+# ----------------------------------------------------------------------
+
+if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ]; then
 
     for train in $train_fin $train_ger; do 
 
@@ -153,7 +350,7 @@ fi
 #Stage 4 : Full UBM Training
 # ----------------------------------------------------------------------
 
-if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ]; then
     
     for train in $train_fin $train_ger; do 
 
@@ -195,10 +392,10 @@ fi
 
 
 # ----------------------------------------------------------------------
-#Stage 5: Training I-Vector Extractor
+#Stage 9: Training I-Vector Extractor
 # ----------------------------------------------------------------------
 
-if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
     
     for train in $train_fin $train_ger; do 
 
@@ -228,7 +425,7 @@ fi
 #Stage 6: Extracting I-Vectors (train and test)
 # ----------------------------------------------------------------------
 
-if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 10 ] || [ $stage -lt 10 ] && [ "${grad}" == "true" ]; then
 
     #Also extracting train I-Vectors as will be useful when computing LDA. 
 
@@ -236,48 +433,67 @@ if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ]; then
     # DO it separatel for german and finnish 
         for train in $train_fin; do
 
-            for iv_type in ${train} ${test_fin}; do 
-
-                ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
+            ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${train}${feats_suffix} 
 
                 if [ ! -f ${ivec_dir}/ivector.scp ]; then
 
-                    nj_ivec=$(wc -l ${data}/${iv_type}${feats_suffix}/spk2utt | cut -d' ' -f1)
-                    echo NJ VEC = $nj_ivec
+                    nj_ivec=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
+
                     local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
                                                   --cmvn ${cmvn} --vad ${vad} \
                                                   --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${iv_type}${feats_suffix} ${ivec_dir};
+                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${train}${feats_suffix} ${ivec_dir};
                     printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
                 else
                     echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
                 fi
-            done
+
+
+                #now ivec dir for test
+                ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}
+                if [ ! -f ${ivec_dir}/ivector.scp ]; then
+
+                    nj_ivec=$(wc -l ${data}/${test_fin}_tr-${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
+                    local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
+                                                  --cmvn ${cmvn} --vad ${vad} \
+                                                  --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${test_fin}_tr-${train}${feats_suffix} ${ivec_dir};
+                    printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
+                else
+                    echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
+                fi
         done
 
-
-
-        # ---------------------------------------------------------------------
-        # Same for train ger
         for train in $train_ger; do
 
-            for iv_type in ${train} ${test_ger}; do 
+            ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${train}${feats_suffix} 
 
-                ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
-
-                    nj_ivec=$(wc -l ${data}/${iv_type}${feats_suffix}/spk2utt | cut -d' ' -f1)
-                    echo NJ VEC = $nj_ivec
-                
                 if [ ! -f ${ivec_dir}/ivector.scp ]; then
+
+                    nj_ivec=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
                     local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
                                                   --cmvn ${cmvn} --vad ${vad} \
                                                   --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${iv_type}${feats_suffix} ${ivec_dir};
+                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${train}${feats_suffix} ${ivec_dir};
                     printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
                 else
                     echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
                 fi
-            done
+
+
+                #now ivec dir for test
+                ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}
+                if [ ! -f ${ivec_dir}/ivector.scp ]; then
+
+                    nj_ivec=$(wc -l ${data}/${test_ger}_tr-${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
+                    local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
+                                                  --cmvn ${cmvn} --vad ${vad} \
+                                                  --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${test_ger}_tr-${train}${feats_suffix} ${ivec_dir};
+                    printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
+                else
+                    echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
+                fi
         done
 fi
 
@@ -294,13 +510,15 @@ fi
 
 # --- Figuring out LDA dims ---- Careful 
 if [ -z "$lda_dim_test_engfin" ]; then
-    num_spk_engfin=$(wc -l ${data}/${test_fin}${feats_suffix}/spk2utt | cut -d' ' -f1)
+    train=$(echo $train_fin | cut -d' ' -f1) #doesnt matter which train use as should all be same test
+    num_spk_engfin=$(wc -l ${data}/${test_fin}_tr-${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
     lda_dim_test_engfin=$(($num_spk_engfin - 1))
     echo "lda_dim_test_engfin set to ${lda_dim_test_engfin}"
 fi
 
 if [ -z "$lda_dim_test_engger" ]; then
-    num_spk_engger=$(wc -l ${data}/${test_ger}${feats_suffix}/spk2utt | cut -d' ' -f1)
+    train=$(echo $train_ger | cut -d' ' -f1) #doesnt matter which train use as should all be same test
+    num_spk_engger=$(wc -l ${data}/${test_ger}_tr-${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
     lda_dim_test_engger=$(($num_spk_engger - 1))
     echo "lda_dim_test_engger set to ${lda_dim_test_engger}"
 fi
@@ -309,7 +527,7 @@ fi
 
 
 
-if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepare_abx" == "true" ]; then
+if [ $stage -eq 11 ] || [ $stage -lt 11 ] && [ "${grad}" == "true" ] && [ "$prepare_abx" == "true" ]; then
 
 
     # -------------------------------------
@@ -323,20 +541,28 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
         
         ivec_test_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}
         logdir_test=${ivec_test_dir}/log
-    
+
+
+
         # LDA on train and test Ivectors
         for x in ${train} ${test_fin}; do
             lda_train_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${x}${feats_suffix}
             logdir_lda=${lda_train_dir}/log
 
-            if [ "${x}" == "${test_fin}" ]; then lda_dim=${lda_dim_test_engfin}; else lda_dim=${lda_dim_train}; fi
+            if [ "${x}" == "${test_fin}" ]; then
+                lda_dim=${lda_dim_test_engfin};
+                data_x=${x}_tr-${train}
+            else
+                lda_dim=${lda_dim_train};
+                data_x=${x}
+            fi
 
             if [ ! -f ${lda_train_dir}/lda-${lda_dim}.mat ]; then
 
                 echo "Computing lda for ${x} in ${lda_train_dir} with $lda_dim dimensions"
                 
                 "$train_cmd"  ${logdir_lda}/compute-lda.log \
-                              ivector-compute-lda --dim=$lda_dim scp:${lda_train_dir}/ivector.scp ark:${data}/${x}${feats_suffix}/utt2spk ${lda_train_dir}/lda-${lda_dim}.mat
+                              ivector-compute-lda --dim=$lda_dim scp:${lda_train_dir}/ivector.scp ark:${data}/${data_x}${feats_suffix}/utt2spk ${lda_train_dir}/lda-${lda_dim}.mat
             fi
 
             if [ "${x}" == "${test_fin}" ]; then lda_filename="lda-${lda_dim}-test_ivector"; else lda_filename="lda-${lda_dim}-train_ivector"; fi
@@ -350,29 +576,36 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
     done
 
 
-
-    # DO same for train ger (TODO: Put it in loop)
+    # For all train sets  in train fin
     for train in $train_ger; do
+
         num_spk_train=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
         lda_dim_train=$(($num_spk_train - 1))
-                
         
         ivec_test_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}
         logdir_test=${ivec_test_dir}/log
-    
+
+
+
         # LDA on train and test Ivectors
         for x in ${train} ${test_ger}; do
             lda_train_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${x}${feats_suffix}
             logdir_lda=${lda_train_dir}/log
 
-            if [ "${x}" == "${test_ger}" ]; then lda_dim=${lda_dim_test_engger}; else lda_dim=${lda_dim_train}; fi
+            if [ "${x}" == "${test_ger}" ]; then
+                lda_dim=${lda_dim_test_engfin};
+                data_x=${x}_tr-${train}
+            else
+                lda_dim=${lda_dim_train};
+                data_x=${x}
+            fi
 
             if [ ! -f ${lda_train_dir}/lda-${lda_dim}.mat ]; then
 
                 echo "Computing lda for ${x} in ${lda_train_dir} with $lda_dim dimensions"
                 
                 "$train_cmd"  ${logdir_lda}/compute-lda.log \
-                              ivector-compute-lda --dim=$lda_dim scp:${lda_train_dir}/ivector.scp ark:${data}/${x}${feats_suffix}/utt2spk ${lda_train_dir}/lda-${lda_dim}.mat
+                              ivector-compute-lda --dim=$lda_dim scp:${lda_train_dir}/ivector.scp ark:${data}/${data_x}${feats_suffix}/utt2spk ${lda_train_dir}/lda-${lda_dim}.mat
             fi
 
             if [ "${x}" == "${test_ger}" ]; then lda_filename="lda-${lda_dim}-test_ivector"; else lda_filename="lda-${lda_dim}-train_ivector"; fi
@@ -384,7 +617,6 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
            fi
         done
     done
-
 
 
 
@@ -410,7 +642,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
         #create ivectors.item #TODO ADD SLURM
         if [ ! -f ${ivec_dir}/ivectors.item ]; then
             echo "** Creating ${ivec_dir}/ivectors.item **"
-            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
+            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}_tr-${train}${feats_suffix} ${ivec_dir}
         fi
  
 
@@ -468,7 +700,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
         #create ivectors.item #TODO ADD SLURM
         if [ ! -f ${ivec_dir}/ivectors.item ]; then
             echo "** Creating ${ivec_dir}/ivectors.item **"
-            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
+            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}_tr-${train}${feats_suffix} ${ivec_dir}
         fi
  
 
@@ -531,7 +763,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         #extension=png
         #TODO: carfeul test ivectors here. Would probably have to do on the test one but lda trained on train
         tgt_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix};
-        test_utt2lang=${data}/${test_fin}${feats_suffix}/utt2lang;
+        test_utt2lang=${data}/${test_fin}_tr-${train}${feats_suffix}/utt2lang;
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
@@ -548,7 +780,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         fi
 
 
-        test_utt2gender=${data}/${test_fin}${feats_suffix}/utt2gender;
+        test_utt2gender=${data}/${test_fin}_tr-${train}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
         if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G -o ${tgt_dir}/log/ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
@@ -579,7 +811,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         #extension=png
         #TODO: carfeul test ivectors here. Would probably have to do on the test one but lda trained on train
         tgt_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix};
-        test_utt2lang=${data}/${test_ger}${feats_suffix}/utt2lang;
+        test_utt2lang=${data}/${test_ger}_tr-${train}${feats_suffix}/utt2lang;
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
@@ -596,7 +828,7 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
         fi
 
 
-        test_utt2gender=${data}/${test_ger}${feats_suffix}/utt2gender;
+        test_utt2gender=${data}/${test_ger}_tr-${train}${feats_suffix}/utt2gender;
         # SAME BUT with gender labels
          if [ ! -f ${tgt_dir}/ivector-mds_gender.${extension} ]; then
             sbatch --mem=5G  -o ${tgt_dir}/log/ivector-mds_gender.log -n 1 local/utils/analysis/estimated-mds.py --utt2gender ${test_utt2gender} ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds_gender.${extension};
