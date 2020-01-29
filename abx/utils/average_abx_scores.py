@@ -16,8 +16,8 @@ with open(args.analyze_file, 'r') as infile:
     total=0.0
     num=0.0
     for l in infile:
-        num += float(l.split()[3])*float(l.split()[4])
-        total += float(l.split()[4])
+        num += float(l.split()[-2])*float(l.split()[-1])
+        total += float(l.split()[-1])
 
 
 print(num / total)

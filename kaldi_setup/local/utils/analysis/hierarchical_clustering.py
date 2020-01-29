@@ -65,7 +65,7 @@ def get_purity_range(c_range, data, label_data, linkage_proc='ward'):
     return purity_range
 
 
-def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None , legend_loc='right'):
+def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None , legend_loc='right', yaxis=None):
     #ivec_names i s a list of length of purity_list, with the name of each ivector for the legend
     #purity is of form [[(c_a1,purity_a1)(c_a2, purity_a2)],[(c_b1,purity_b1)(c_b2, purity_b2)]]
     #style_list is a list of same size as the purity list with tuple of color and linestyle. eg: [('r','--'), ('b', '-')]
@@ -99,7 +99,12 @@ def plot_purity(purity_list, out_fig, ivec_names,label_name, style_list=None , l
         raise ValueError
     plt.ylabel('{} purity'.format(label_name))
     plt.xlabel('Number of clusters')
+    if yaxis:
+        plt.ylim(yaxis)
+    # plt.ylim((-0.04,0.68)) # for lang train
+    #plt.ylim((0.0,0.58)) # for spk train
     plt.savefig(out_fig,bbox_extra_artists=(lgd,), bbox_inches='tight')
+    #plt.savefig(out_fig)
     plt.close()
 
 

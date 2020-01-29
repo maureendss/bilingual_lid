@@ -8,12 +8,12 @@ stage=0
 grad=true
 nj=50
 nj_train=12
-data=data/emime #to chnge. Maybe make as complusory option?
+data=data/emime-controlled #to chnge. Maybe make as complusory option?
 raw_data=../../data/emime
-raw_data_lists=../../data/emime/lists
+raw_data_lists=../../data/emime/lists-controlled
 no_speaker_info=false
 prepare_abx=true
-exp_dir=exp_emime
+exp_dir=exp_emime-controlled
 
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
@@ -46,7 +46,7 @@ lda_dim_train=  ###NUM OF SPEAKERS TO AUTOMATIZE. Not possible cause bigger than
 num_gauss=128
 ivector_dim=150
 
-abx_dir=../abx/kaldi_exps_EMIME
+abx_dir=../abx/kaldi_exps_EMIME-controlled
 
 
 #Additional setup

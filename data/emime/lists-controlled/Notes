@@ -1,0 +1,4 @@
+grep -E "FF(2|4|6).*0$|FF(3|5|7).*1$|FM(1|3|6).*0$|FM(2|5|7).*1$" processing/train_all.txt > ../lists-controlled/train_bil_1_eng-fin.txt
+grep -E "GF[2-7]_(ENG|GER)_007[4-9]|GF[2-7]_(ENG|GER)_00[8-9][0-9]|GF[2-7]_(ENG|GER)_01[0-9][0-9]|GM[1-6]_(ENG|GER)_007[4-9]|GM[1-6]_(ENG|GER)_00[8-9][0-9]|GM[1-6]_(ENG|GER)_01[0-9][0-9]" processing/train_all.txt > ../lists-controlled/train_bil-sent_2_eng-ger.txt 
+
+grep -E "GF[2-7]_(ENG|GER)_00[0-6]|GF[2-7]_(ENG|GER)_007[0-3]|GM[1-6]_(ENG|GER)_00[0-6]|GM[1-6]_(ENG|GER)_007[0-3]" processing/train_all.txt > ../lists-controlled/train_bil-sent_1_eng-ger.txt 
