@@ -345,7 +345,13 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
 
                 "$train_cmd"  ${logdir_test}/${lda_filename}/transform-ivectors-train.log \
                               ivector-transform ${lda_train_dir}/lda-${lda_dim}.mat scp:${ivec_test_dir}/ivector.scp ark,scp:${ivec_test_dir}/${lda_filename}.ark,${ivec_test_dir}/${lda_filename}.scp;
-           fi
+            fi
+
+            if [ ! -f ${lda_train_dir}/${lda_filename}.scp ]; then
+                
+                "$train_cmd"  ${logdir_lda}/${lda_filename}/transform-ivectors-train-lda.log \
+                              ivector-transform ${lda_train_dir}/lda-${lda_dim}.mat scp:${lda_train_dir}/ivector.scp ark,scp:${lda_train_dir}/${lda_filename}.ark,${lda_train_dir}/${lda_filename}.scp;
+            fi 
         done
     done
 
@@ -381,7 +387,12 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
 
                 "$train_cmd"  ${logdir_test}/${lda_filename}/transform-ivectors-train.log \
                               ivector-transform ${lda_train_dir}/lda-${lda_dim}.mat scp:${ivec_test_dir}/ivector.scp ark,scp:${ivec_test_dir}/${lda_filename}.ark,${ivec_test_dir}/${lda_filename}.scp;
-           fi
+            fi
+            if [ ! -f ${lda_train_dir}/${lda_filename}.scp ]; then
+                
+                "$train_cmd"  ${logdir_lda}/${lda_filename}/transform-ivectors-train-lda.log \
+                              ivector-transform ${lda_train_dir}/lda-${lda_dim}.mat scp:${lda_train_dir}/ivector.scp ark,scp:${lda_train_dir}/${lda_filename}.ark,${lda_train_dir}/${lda_filename}.scp;
+            fi 
         done
     done
 

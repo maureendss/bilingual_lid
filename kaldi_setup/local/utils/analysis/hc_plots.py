@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # from local.utils.analysis.hierarchical_clustering import *
-from hierarchical_clustering import *
+from clustering import *
  
 
 def run_hc(ivecs_names, ivecs, data_dirs, label, prange, out_fig, style_list=None, legend_loc='right'):

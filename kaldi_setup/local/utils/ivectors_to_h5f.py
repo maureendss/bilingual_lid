@@ -40,8 +40,8 @@ if __name__ == "__main__":
             filenames.append(key)
             ivector_2d = np.expand_dims(numpy_array.astype(np.float64), axis=0) 
             np.savez('{}/tmp/{}'.format(args.target_dir, key), features=ivector_2d, time=times)
-
+    print('aaa')
     any2h5features.convert('{}/tmp/'.format(args.target_dir), '{}/{}'.format(args.target_dir, args.output_name))
-
+    print('bbb')
     
-    shutil.rmtree('{}/tmp'.format(args.target_dir))
+    # shutil.rmtree('{}/tmp'.format(args.target_dir))
