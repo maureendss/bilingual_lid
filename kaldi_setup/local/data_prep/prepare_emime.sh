@@ -33,12 +33,13 @@ mkdir -p $tgt_dir
 if [ ! -f $tgt_dir/wav.scp ]; then
     echo "Creating $tgt_dir/wav.scp"
 
-    for x in $wav_directory/* ; do
+    for x in $wav_directory/*; do
         utt=$(echo `basename $x .wav`)
         echo "$utt sox ${x} -t wav -r 16000 - |" >> $tgt_dir/wav.scp.tmp;
-        sort $tgt_dir/wav.scp.tmp > $tgt_dir/wav.scp
-        rm $tgt_dir/wav.scp.tmp
     done
+    sort $tgt_dir/wav.scp.tmp > $tgt_dir/wav.scp
+    rm $tgt_dir/wav.scp.tmp
+    
 else
     echo "$tgt_dir/wav.scp already exist, no recomputing it"
 fi

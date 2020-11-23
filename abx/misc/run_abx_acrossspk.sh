@@ -23,13 +23,13 @@ item=${abx_dir}/ivectors.item
 features=${abx_dir}/ivectors.h5f
 
 # output files produced by ABX
-task=${abx_dir}/data_byspk.abx
-distance=${abx_dir}/data_byspk.distance
-score=${abx_dir}/data_byspk.score
-analyze=${abx_dir}/data_byspk.csv
+task=${abx_dir}/data_acspk.abx
+distance=${abx_dir}/data_acspk.distance
+score=${abx_dir}/data_acspk.score
+analyze=${abx_dir}/data_acspk.csv
 
 # generating task file
-abx-task $item $task --verbose --on lang --by spk
+abx-task $item $task --verbose --on lang --across spk
 
 # computing distances
 abx-distance $features $task $distance --normalization 1 --njobs 5
@@ -42,4 +42,5 @@ abx-analyze $score $task $analyze
 
 
 # Average results
-python utils/average_abx_scores.py $analyze > $abx_dir/abx_byspk.avg
+python utils/average_abx_scores.py $analyze > $abx_dir/abx_acspk.avg
+

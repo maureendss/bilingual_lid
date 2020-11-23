@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 2 ]]; then
     echo "Illegal number of parameters"
     exit 2
 fi
 
 abx_dir=$1
+on_value=$2
+
 
 for x in ivectors.h5f ivectors.item; do
     if [ ! -f ${abx_dir}/${x} ]; then
@@ -23,13 +25,15 @@ item=${abx_dir}/ivectors.item
 features=${abx_dir}/ivectors.h5f
 
 # output files produced by ABX
-task=${abx_dir}/data_acspk.abx
-distance=${abx_dir}/data_acspk.distance
-score=${abx_dir}/data_acspk.score
-analyze=${abx_dir}/data_acspk.csv
+task=${abx_dir}/data_on_${on_value}.abx
+distance=${abx_dir}/data_on_${on_value}.distance
+score=${abx_dir}/data_on_${on_value}.score
+analyze=${abx_dir}/data_on_${on_value}.csv
 
 # generating task file
-abx-task $item $task --verbose --on lang --across spk
+abx-task $item $task --verbose --on ${on_value}
+
+# python task.py $item $task --verbose --on lang --filter="[sA != sX for (sA, sX) in zip(spk_A,spk_X)]"
 
 # computing distances
 abx-distance $features $task $distance --normalization 1 --njobs 5
@@ -41,6 +45,4 @@ abx-score $task $distance $score
 abx-analyze $score $task $analyze
 
 
-
-cat $analyze | awk -F' ' 'NR > 1 {sum+=$6*$7;  total+=$7} END {print sum / total}' > $abx_dir/abx_acspk.avg
-
+python utils/average_abx_scores.py $analyze > $abx_dir/abx_on_${on_value}.avg

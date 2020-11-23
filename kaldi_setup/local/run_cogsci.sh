@@ -13,7 +13,9 @@ raw_data=../../data/emime
 raw_data_lists=../../data/emime/lists-controlled
 no_speaker_info=false
 prepare_abx=true
+
 exp_dir=exp_emime-controlled
+abx_dir=../abx/EMIME-controlled
 
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
@@ -22,13 +24,12 @@ train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_
 train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
 
 
+train_ger="train_bil_1_eng-ger train_mix_1_eng-ger train_mono_eng_native train_mono_eng_gerspk train_mono_ger train_bil_2_eng-ger train_mix_2_eng-ger" #all datasets related to eng-ger train sets
+train_fin="train_bil_1_eng-fin train_mix_1_eng-fin train_mono_eng_native train_mono_fin train_mono_eng_finspk train_bil_2_eng-fin train_mix_2_eng-fin"
 
-# TODO : NEED TO BE ABLE TO TRY ALL TEST SETS IN ONCE
-test_ger=test_eng-ger-mono
-test_fin=test_eng-fin-mono
-# test_ger="test_eng-ger-mono test_eng-ger-bil test_eng-ger-mixed"
-# test_fin="test_eng-fin-mono test_eng-fin-bil test_eng-fin-mixed"
 
+test_ger=test_eng-ger-bil
+test_fin=test_eng-fin-bil
 
 
 
@@ -37,21 +38,19 @@ test_fin=test_eng-fin-mono
 vad=false #not in original experiment. 
 cmvn=false
 deltas=false
-deltas_sdc=false # not compatible with deltas
-
+deltas_sdc=true # not compatible with deltas
 diag_only=false #if true, only train a diag ubm and not a full one. 
 
-lda_dim_test= #NEED TO MAKE IT SIZE OF TEN SET> AUTMOATIZE IT. 19. 
-lda_dim_train=  ###NUM OF SPEAKERS TO AUTOMATIZE. Not possible cause bigger than number of ivector dimensions. Should be 167 but if not set just put the num of ivector dim. 
+lda_dim_test=
+lda_dim_train=
 num_gauss=128
 ivector_dim=150
 
-abx_dir=../abx/kaldi_exps_EMIME-controlled
 
 
 #Additional setup
-run_inversed_lda=false
-inv_lda=5
+# run_inversed_lda=false
+# inv_lda=5
 
 
 . ./cmd.sh
@@ -395,14 +394,8 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
             fi 
         done
     done
-
-
-
-
-
-    
+  
 fi
-
 
 # ----------------------------------------------------------------------
 #Stage 8: Setting up ABX directory for non-LDA I-Vectors AND LDA
@@ -546,16 +539,16 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            sbatch --mem=5G -o ${tgt_dir}/log/ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+            sbatch --mem=5G -o ${tgt_dir}/log/ivector-mds.log -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension} ]; then
-            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_test_engfin}-test_ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_test_engfin}-test_ivector-mds.log local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engfin}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
-            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds.log -n 1 local/utils/analysis/estimated-mds ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
 
@@ -594,16 +587,16 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
 
 
         if [ ! -f ${tgt_dir}/ivector-mds.${extension} ]; then
-            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/ivector-mds.log local/utils/analysis/estimated-mds.py ${tgt_dir}/ivector.scp ${test_utt2lang} ${tgt_dir}/ivector-mds.${extension};
         fi
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension} ]; then
-            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_test_engger}-test_ivector-mds.log -n 1 local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
+            sbatch --mem=5G -o ${tgt_dir}/log/lda-${lda_dim_test_engger}-test_ivector-mds.log -n 1 local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_test_engger}-test_ivector-mds.${extension};
         fi
 
 
         if [ ! -f ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension} ]; then
-            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds.log local/utils/analysis/estimated-mds_oldversion.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
+            sbatch --mem=5G -n 1 -o ${tgt_dir}/log/lda-${lda_dim_train}-train_ivector-mds.log local/utils/analysis/estimated-mds.py ${tgt_dir}/lda-${lda_dim_train}-train_ivector.scp ${test_utt2lang} ${tgt_dir}/lda-${lda_dim_train}-train_ivector-mds.${extension};
         fi
 
 
