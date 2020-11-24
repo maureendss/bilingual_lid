@@ -89,8 +89,7 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ] && [ "$prepar
         logdir_test=${ivec_test_dir}/log
     
         # LDA on train and test Ivectors
-        # for x in ${train} ${test_fin}; do
-        for x in ${train}; do
+        for x in ${train} ${test_fin}; do
             lda_train_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${x}${feats_suffix}
             logdir_lda=${lda_train_dir}/log
 
@@ -149,7 +148,7 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ] && [ "$prepar
             
             if [ ! -f ${oc_lda} ]; then
 
-                echo "Computing inversed lda on ${lda_train_dir}/lda-${lda_dim}.mat using ${inversed_lda_dim} dimensions"
+                echo "Computing oc lda on ${lda_train_dir}/lda-${lda_dim}.mat"
                 
                 python local/lda/lda_orthogonal_complement.py ${orig_lda} ${oc_lda}
                 
