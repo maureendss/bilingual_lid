@@ -1,17 +1,31 @@
 # LID
 
 Language IDentification system
-- Replication of Carbajal's Experiment 6 in the modeling chapter
+- Insipred from Carbajal's Experiment 6 in the modeling chapter
 
 
 
-# Running Ivector system.
+## Replicating Results from de Seyssel & Dupoux, 2020
 
-1. Link all files from kaldi_setup into a local/kaldi_setup folder. 
-2. Run local/run_cogsci.sg
-3. Once done, you can run again the same files changing the "test_ger" and "test_fin" variables into their "bil" and "mixed" equivalents. (eg "test_ger=test_eng-ger-bil" )
+1. Fill out the `kaldi_setup/cmd.sh` and `kaldi_setup/path.sh` accordingly with your setup.
 
+2. Create a `wavs` directory and add link to all wav files from EMIME in `data/emime/wavs` *(On Oberon, you can use the `data/emime/wavs_oberon.txt` file containing the path of all used wavs to create the directory.*
 
-4. Link all files from abx into a local/abx folder
-5. run_by_spk.sh
+3. Link all files from `kaldi_setup` and `abx` into appropriate local folders (this is where the output of your experiments will go). *Consider creating this local folders into a place with enough storage*.
+   ```
+   mkdir -p local/kaldi_setup
+   mkdir -p local/abx
+   cd local/kaldi_setup && ln -s ../../kaldi_setup/* . && cd ../..
+   cd local/abx && ln -s ../../abx/* . && cd ../..
+   ```
 
+4. Activate Conda Environment.  __TODO : Give info on env__
+5. Run local/run_cogsci.sh : `cd local/kaldi_setup && local/run_cogsci.sh`
+
+6. Run the ABX tests : `cd ../abx/ && ./run_by_spk.sh`
+
+*Note : Results are prone to minor changes due to the randomness in computing MFCC features*
+
+--------------------
+
+[de Seyssel, M. & Dupoux, E. (2020). Does bilingual input hurt? A simulation of language discrimination and clustering using i-vectors. In *Proceedings for the Annual Meeting of the Cognitive Science Society 2020*](https://cognitivesciencesociety.org/cogsci20/papers/0683/0683.pdf)
