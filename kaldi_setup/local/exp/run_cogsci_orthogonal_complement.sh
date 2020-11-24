@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+#!/usr/bin/env bash
+
 # File for first steps on IVector Experiments
 
-inversed_lda_dim=5
 
+mfcc_conf=mfcc.original.conf # mfcc configuration file. The "original" one attempts to reproduce the settings in julia's experiments. 
 stage=0
 grad=true
 nj=40
@@ -13,21 +15,24 @@ raw_data=../../data/emime
 raw_data_lists=../../data/emime/lists-controlled
 no_speaker_info=false
 prepare_abx=true
+
 exp_dir=exp_emime-controlled
+abx_dir=../abx/EMIME-controlled
 
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
 
-train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger train_mix_spkmatch_eng-ger" #all datasets related to eng-ger train sets
-train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin train_mix_spkmatch_eng-fin"
+train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
+train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
 
 
+train_ger="train_bil_1_eng-ger train_mix_1_eng-ger train_mono_eng_native train_mono_eng_gerspk train_mono_ger train_bil_2_eng-ger train_mix_2_eng-ger" #all datasets related to eng-ger train sets
+train_fin="train_bil_1_eng-fin train_mix_1_eng-fin train_mono_eng_native train_mono_fin train_mono_eng_finspk train_bil_2_eng-fin train_mix_2_eng-fin"
 
-# TODO : NEED TO BE ABLE TO TRY ALL TEST SETS IN ONCE
+
 test_ger=test_eng-ger-bil
 test_fin=test_eng-fin-bil
-# test_ger="test_eng-ger-mono test_eng-ger-bil test_eng-ger-mixed"
-# test_fin="test_eng-fin-mono test_eng-fin-bil test_eng-fin-mixed"
+
 
 
 
@@ -35,17 +40,14 @@ test_fin=test_eng-fin-bil
 vad=false #not in original experiment. 
 cmvn=false
 deltas=false
-deltas_sdc=false # not compatible with deltas
-
+deltas_sdc=true # not compatible with deltas
 diag_only=false #if true, only train a diag ubm and not a full one. 
 
-lda_dim_test= #NEED TO MAKE IT SIZE OF TEN SET> AUTMOATIZE IT. 19. 
-lda_dim_train=  ###NUM OF SPEAKERS TO AUTOMATIZE. Not possible cause bigger than number of ivector dimensions. Should be 167 but if not set just put the num of ivector dim. 
-
+lda_dim_test=
+lda_dim_train=
 num_gauss=128
 ivector_dim=150
 
-abx_dir=../abx/kaldi_exps_EMIME-controlled
 
 . ./cmd.sh
 . ./path.sh

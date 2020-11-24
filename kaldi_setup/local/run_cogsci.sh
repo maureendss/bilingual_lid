@@ -620,3 +620,9 @@ if [ $stage -eq 9 ] || [ $stage -lt 9 ] && [ "${grad}" == "true" ]; then
     done;
 
 fi
+
+
+if [ $stage -eq 10 ] || [ $stage -lt 10 ] && [ "${grad}" == "true" ]; then
+    echo "Running orthogonal complement of LDA experiments"
+    ./local/exp/run_cogsci_orthogonal_complement.sh
+fi
