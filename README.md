@@ -22,7 +22,9 @@ Language IDentification system
 4. Activate Conda Environment.  __TODO : Give info on env__
 5. Run local/run_cogsci.sh : `cd local/kaldi_setup && local/run_cogsci.sh`
 
-6. Run the ABX tests : `cd ../abx/ && ./run_by_spk.sh`
+6. Run the ABX tests : `cd ../abx/ && ./run_by_spk.sh EMIME-controlled`
+
+7. Retrieve the scores : `./retrieve_scores.sh EMIME-controlled > EMIME-controlled.byspk.scores.txt
 
 *Note : Results are prone to minor changes due to the randomness in computing MFCC features*
 

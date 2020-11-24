@@ -3,8 +3,8 @@
 set -e # exit on error
 
 if [ $# != 1 ]; then
-   echo "usage: ./run.sh <abx_dir>"
-   echo "e.g.:  ./run.sh kaldi_exps/EMIME"
+   echo "usage: ./run_byspk.sh <abx_dir>"
+   echo "e.g.:  ./run.sh EMIME"
    exit 1;
 fi
 
@@ -12,7 +12,7 @@ fi
 
 dir=$1
 
-for x in $dir/*ts*bil* ; do
+for x in $dir/* ; do
     mkdir -p ${x}/log
     
     if [ ! -f ${x}/abx_byspk.avg ]; then
