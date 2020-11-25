@@ -20,9 +20,6 @@ abx_dir=../abx/EMIME-controlled
 feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
 
-train_ger="train_bil_eng-ger train_mix_eng-ger train_mono_eng_native train_mono_eng train_mono_ger" #all datasets related to eng-ger train sets
-train_fin="train_bil_eng-fin train_mix_eng-fin train_mono_eng_native train_mono_eng train_mono_fin"
-
 
 train_ger="train_bil_1_eng-ger train_mix_1_eng-ger train_mono_eng_native train_mono_eng_gerspk train_mono_ger train_bil_2_eng-ger train_mix_2_eng-ger" #all datasets related to eng-ger train sets
 train_fin="train_bil_1_eng-fin train_mix_1_eng-fin train_mono_eng_native train_mono_fin train_mono_eng_finspk train_bil_2_eng-fin train_mix_2_eng-fin"
