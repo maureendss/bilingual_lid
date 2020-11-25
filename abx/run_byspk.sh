@@ -17,7 +17,7 @@ for x in $dir/* ; do
     
     if [ ! -f ${x}/abx_byspk.avg ]; then
         echo "Processing ${x}"
-        sbatch --mem=5G -n 5 -o ${x}/log/abx_byspk.log ./run_abx_byspk.sh ${x}
+        sbatch --mem=5G -n 5 -o ${x}/log/abx_byspk.log ./abx_byspk.sh ${x}
     fi
     
 done

@@ -33,8 +33,6 @@ analyze=${abx_dir}/data_on_${on_value}_by_${by_value}.csv
 # generating task file
 abx-task $item $task --verbose --on ${on_value} --by ${by_value}
 
-# python task.py $item $task --verbose --on lang --filter="[sA != sX for (sA, sX) in zip(spk_A,spk_X)]"
-
 # computing distances
 abx-distance $features $task $distance --normalization 1 --njobs 5
 
