@@ -17,12 +17,12 @@ value_a=$2
 value_b=$3
 
 
-for x in $dir/* ; do
+for x in $dir/ivec* ; do
     mkdir -p ${x}/log
     
     if [ ! -f ${x}/abx_crossed_${value_a}_${value_b}.avg ]; then
         echo "Processing ${x}"
-        sbatch --mem=5G -n 5 -o ${x}/log/abx_crossed_${value_a}_${value_b}.log misc/abx_crossed.sh ${x} ${value_a} ${value_b}
+        sbatch --mem=20G -n 5 -o ${x}/log/abx_crossed_${value_a}_${value_b}.log misc/abx_crossed.sh ${x} ${value_a} ${value_b}
         
     fi
     

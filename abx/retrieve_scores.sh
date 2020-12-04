@@ -2,7 +2,7 @@
 
 set -e # exit on error
 
-if [ $# < 1 ]; then
+if [ $# != 2 ]; then
    echo "usage: ./retrieve_scores.sh <abx_dir> <abx_avg_name>"
    echo "e.g.:  ./run.sh EMIME abx_on_spk_by_lang.avg"
    exit 1;
@@ -11,7 +11,7 @@ fi
 
 
 dir=$1
-avg_name=${2:-abx_byspk.avg}
+avg_name=${2}
 
 for x in $dir/* ; do
     mkdir -p ${x}/log

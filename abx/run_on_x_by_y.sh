@@ -20,7 +20,7 @@ for x in $dir/* ; do
     
     if [ ! -f ${x}/abx_on_${on_value}_by_${by_value}.avg ]; then
         echo "Processing ${x}"
-        sbatch --mem=5G -n 5 -o ${x}/log/abx_on_${on_value}_by_${by_value}.log misc/run_abx_on_x_by_y.sh ${x} ${on_value} ${by_value}
+        sbatch --mem=20G -n 5 -o ${x}/log/abx_on_${on_value}_by_${by_value}.log misc/run_abx_on_x_by_y.sh ${x} ${on_value} ${by_value}
         
     fi
     
