@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 
@@ -27,19 +28,33 @@ task=${abx_dir}/data_byspk.abx
 distance=${abx_dir}/data_byspk.distance
 score=${abx_dir}/data_byspk.score
 analyze=${abx_dir}/data_byspk.csv
+average=$abx_dir/abx_byspk.avg
+
 
 # generating task file
+if [ ! -f "$task" ]; then
 abx-task $item $task --verbose --on lang --by spk
+fi
 
 # computing distances
-abx-distance $features $task $distance --normalization 1 --njobs 5
+if [ ! -f "$distance" ]; then
+    abx-distance $features $task $distance --normalization 1 --njobs 5
+fi
+
 
 # calculating the score
-abx-score $task $distance $score
+if [ ! -f "$score" ]; then
+    abx-score $task $distance $score
+fi
+
 
 # collapsing the results
-abx-analyze $score $task $analyze
-
+if [ ! -f "$analyze" ]; then
+    abx-analyze $score $task $analyze
+fi
 
 # Average results
-python utils/average_abx_scores.py $analyze > $abx_dir/abx_byspk.avg
+if [ ! -f "$average" ]; then
+    echo " Average results"
+    python utils/average_abx_scores.py $analyze > $average
+fi

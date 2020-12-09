@@ -29,22 +29,30 @@ task=${abx_dir}/data_spkfilt.abx
 distance=${abx_dir}/data_spkfilt.distance
 score=${abx_dir}/data_spkfilt.score
 analyze=${abx_dir}/data_spkfilt.csv
+average=$abx_dir/abx_spkfilt.avg
 
 # generating task file
-abx-task $item $task --verbose --on lang --filter="[sA != sX for (sA, sX) in zip(spk_A,spk_X)]" 
-
-#abx-task $item $task --verbose --on lang --filter="[sA != sX and sA != sB and sB != sX for (sA, sB, sX) in zip(spk_A,spk_B,spk_X)]" - can't use as otherwise we don't have symmetric reults between two langauges. 
-
-# python task.py $item $task --verbose --on lang --filter="[sA != sX for (sA, sX) in zip(spk_A,spk_X)]"
+if [ ! -f "$task" ]; then
+    abx-task $item $task --verbose --on lang --filter="[sA != sX for (sA, sX) in zip(spk_A,spk_X)]" 
+fi
 
 # computing distances
-abx-distance $features $task $distance --normalization 1 --njobs 5
+if [ ! -f "$distance" ]; then
+    abx-distance $features $task $distance --normalization 1 --njobs 5
+fi
 
 # calculating the score
-abx-score $task $distance $score
+if [ ! -f "$score" ]; then
+    abx-score $task $distance $score
+fi
 
 # collapsing the results
-abx-analyze $score $task $analyze
+if [ ! -f "$analyze" ]; then
+    abx-analyze $score $task $analyze
+fi
 
 # Average results
-python utils/average_abx_scores.py $analyze > $abx_dir/abx_spkfilt.avg
+if [ ! -f "$average" ]; then
+    echo " Average results"
+    python utils/average_abx_scores.py $analyze > $average
+fi

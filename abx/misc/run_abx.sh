@@ -27,21 +27,36 @@ task=${abx_dir}/data.abx
 distance=${abx_dir}/data.distance
 score=${abx_dir}/data.score
 analyze=${abx_dir}/data.csv
+average=${abx_dir}abx_standard.avg
 
 # generating task file
-abx-task $item $task --verbose --on lang
-
-# python task.py $item $task --verbose --on lang --filter="[sA != sX for (sA, sX) in zip(spk_A,spk_X)]"
+if [ ! -f "$task" ]; then
+    echo "computing task"
+    abx-task $item $task --verbose --on lang
+fi
 
 # computing distances
-abx-distance $features $task $distance --normalization 1 --njobs 5
+if [ ! -f "$distance" ]; then
+    echo "computing distances"
+    abx-distance $features $task $distance --normalization 1 --njobs 5
+fi
 
-# calculating the score
-abx-score $task $distance $score
+if [ ! -f "$score" ]; then
+    echo "computing score"
+    # calculating the score
+    abx-score $task $distance $score
+fi
+
+
 
 # collapsing the results
-abx-analyze $score $task $analyze
-
+if [ ! -f "$analyze" ]; then
+    echo " collapsing the results"
+    abx-analyze $score $task $analyze
+fi
 
 # Average results
-python utils/average_abx_scores.py $analyze > $abx_dir/abx_standard.avg
+if [ ! -f "$average" ]; then
+    echo " Average results"
+    python utils/average_abx_scores.py $analyze > $average
+fi

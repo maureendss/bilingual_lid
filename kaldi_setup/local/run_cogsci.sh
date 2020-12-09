@@ -621,5 +621,5 @@ fi
 
 if [ $stage -eq 10 ] || [ $stage -lt 10 ] && [ "${grad}" == "true" ]; then
     echo "Running orthogonal complement of LDA experiments"
-    ./local/exp/run_cogsci_orthogonal_complement.sh
+    ./local/exp/run_cogsci_orthogonal_complement.sh --train_ger "$train_ger" --train_fin "$train_fin" --test_ger "$test_ger" --test_fin "test_fin" --exp_dir "$exp_dir" --abx_dir "$abx_dir" --feats_suffix "$feats_suffix" --exp_suffix "$exp_suffix" 
 fi

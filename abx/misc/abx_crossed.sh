@@ -33,21 +33,33 @@ task=${abx_dir}/data_crossed_${value_a}_${value_b}.abx
 distance=${abx_dir}/data_crossed_${value_a}_${value_b}.distance
 score=${abx_dir}/data_crossed_${value_a}_${value_b}.score
 analyze=${abx_dir}/data_crossed_${value_a}_${value_b}.csv
-
+average=$abx_dir/abx_crossed_${value_a}_${value_b}.avg
 # generating task file
 
 
+if [ ! -f "$task" ]; then
+    echo "computing task"
+    abx-task $item $task --verbose --on ${value_a} --filter="[sA != sX and sB == sX for (sA, sB, sX) in zip(${value_b}_A,${value_b}_B,${value_b}_X)]"
+fi
 
-abx-task $item $task --verbose --on ${value_a} --filter="[sA != sX and sB == sX for (sA, sB, sX) in zip(${value_b}_A,${value_b}_B,${value_b}_X)]"
+if [ ! -f "$distance" ]; then
+    echo "computing distances"
+    abx-distance $features $task $distance --normalization 1 --njobs 5
+fi
 
-# computing distances
-abx-distance $features $task $distance --normalization 1 --njobs 5
+if [ ! -f "$score" ]; then
+    echo "computing score"
+    # calculating the score
+    abx-score $task $distance $score
+fi
 
-# calculating the score
-abx-score $task $distance $score
+if [ ! -f "$analyze" ]; then
+    echo " collapsing the results"
+    abx-analyze $score $task $analyze
+fi
 
-# collapsing the results
-abx-analyze $score $task $analyze
+if [ ! -f "$average" ]; then
+    echo " Average results"
 
-# Average results
-python utils/average_abx_scores.py $analyze > $abx_dir/abx_crossed_${value_a}_${value_b}.avg
+    python utils/average_abx_scores.py $analyze > $average
+fi
