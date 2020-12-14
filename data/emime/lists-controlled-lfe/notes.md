@@ -3,6 +3,8 @@
 We are using the original LID Train sets as test sets for the LFE experiments (as they require multiple speakers).  
 ### English - Finnish
 
+We reduced the sets by -1) removing all utterances which id finished by "_0", removing all utterances which ID number wasn't ending by 0 or 5 .
+
 **Bilingual** : lfe-test_bil_eng-fin.txt
 **Mixed** : lfe-test_mix_eng-fin.txt + train_mix_2_eng-fin.txt
 **Monolingual** : lfe-test_mono_fin.txt + lfe-test_mono_eng_finspk.txt + lfe-test_eng_native.txt
