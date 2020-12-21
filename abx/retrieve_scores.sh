@@ -19,8 +19,8 @@ for x in $dir/* ; do
     if [ -f ${x}/${avg_name} ]; then
         avg=$(cat ${x}/${avg_name})
         cond=$(echo `basename ${x}`)
-        # avg_percent=$(echo "$avg * 100" | bc)
-        echo $avg $cond
+        avg_percent=$(echo "$avg * 100" | bc)
+        echo $avg_percent $cond
     fi
     
 done

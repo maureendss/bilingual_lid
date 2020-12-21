@@ -24,8 +24,8 @@ if args.categ_list:
                     num += float(l.split()[-2])*float(l.split()[-1])
                     total += float(l.split()[-1])
             if total!=0:
-                print(cat, num/total)
-            
+                # print(cat, num/total)
+                print(cat, num/total*100)            
 
                 
 else:     

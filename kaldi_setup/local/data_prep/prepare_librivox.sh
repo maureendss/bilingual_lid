@@ -12,7 +12,7 @@ set -e # exit on error
 
 if [ $# != 3 ]; then
    echo "usage: local/data_prep/prepare_librivox.sh <lb_processed_directory> <target_data_dir> |LANG|"
-   echo "e.g.:  local/prepare_xitsonga_english.sh data/xitsonga-english/wavs/ data/librivox/german/lb_german_10h_4spk"
+   echo "e.g.:  local/data/prep/prepare_librivox.sh ~/data/speech/librivox/english/processed/LFE/10h_4spk ENG"
    exit 1;
 fi
 
@@ -40,6 +40,8 @@ if [ ! -f $tgt_dir/wav.scp ]; then
 else
     echo "$tgt_dir/wav.scp already exist, no recomputing it"
 fi
+
+
 
 
 if [ -f $tgt_dir/spk2utt ] && [ -f $tgt_dir/utt2spk ]; then

@@ -9,8 +9,8 @@ grad=true
 nj=40
 nj_train=4
 data=data/librispeech #to chnge. Maybe make as complusory option?
-# raw_data=../../data/emime
-# raw_data_lists=../../data/emime/lists-controlled
+test_raw_data=../../data/emime
+test_raw_data_lists=../../data/emime/lists-controlled-lfe
 no_speaker_info=false
 prepare_abx=true
 
@@ -21,12 +21,12 @@ feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
 
 
-train_ger="finnish_10h_4spk" #all datasets related to eng-ger train sets
-train_fin="finnish_10h_4spk"
+train_ger="chinese_10h_4spk" #all datasets related to eng-ger train sets
+train_fin="chinese_10h_10spk"
 
 # # Also run it with train_eng-ger-mix and train_eng-fin-mix
-test_ger=train_mix_1_eng-fin
-test_fin=train_mix_1_eng-fin
+test_ger=lfe-test_bil_1_eng-ger
+test_fin=lfe-test_bil_1_eng-fin
 
 
 
@@ -57,23 +57,12 @@ ivector_dim=150
 set -e # exit on error
 
 
-# ----------------------------------------------------------------------
-#Stage 0: Kaldi Data Preparation
-# ----------------------------------------------------------------------
 
-# if [ $stage -eq 0 ] || [ $stage -lt 0 ] && [ "${grad}" == "true" ]; then
-
-#     #Explain how get the raw data?
-    
-#     echo "**** Preparing main 'all' data ****"
-#     ./local/data_prep/prepare_emime.sh --no_speaker_info ${no_speaker_info} ${raw_data}/wavs $data/all${feats_suffix}
-
-# fi
 
 
 
 # ----------------------------------------------------------------------
-#Stage 1 : Features Extraction
+#Stage 1 : Features Extraction of train sets. 
 # ----------------------------------------------------------------------
 
 if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ]; then
@@ -104,6 +93,8 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ]; then
     # If wanna add pitch for later experiments - have to run the make mfcc pitch script here instead. 
     # Same if wanna add CMN. Doesn't really make sense here anyway. .
 fi 
+
+
 
 # ----------------------------------------------------------------------
 #Stage 3 : Diagonal UBM Training
