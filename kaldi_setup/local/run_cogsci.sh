@@ -10,7 +10,7 @@ nj=40
 nj_train=10
 data=data/emime-controlled #to chnge. Maybe make as complusory option?
 raw_data=../../data/emime
-raw_data_lists=../../data/emime/lists-controlled-lfe
+raw_data_lists=../../data/emime/lists-controlled
 no_speaker_info=false
 prepare_abx=true
 
@@ -117,166 +117,166 @@ local/data_prep/combine_sets_emime.sh --utt_lists_dir ${raw_data_lists} --datase
 fi
  
 
-# # ----------------------------------------------------------------------
-# #Stage 3 : Diagonal UBM Training
-# # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+#Stage 3 : Diagonal UBM Training
+# ----------------------------------------------------------------------
 
-# if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 3 ] || [ $stage -lt 3 ] && [ "${grad}" == "true" ]; then
 
-#     for train in $train_fin $train_ger; do 
+    for train in $train_fin $train_ger; do 
 
-#         diag_ubm=${exp_dir}/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}
-#         if [ ! -f ${diag_ubm}/final.dubm ]; then
-#             echo "*** Training diag UBM with $train dataset ***"
-#             local/lid/train_diag_ubm.sh --cmd "$train_cmd --mem 20G" \
-#                                         --nj ${nj_train} --num-threads 8 \
-#                                         --parallel_opts "" \
-#                                         --cmvn ${cmvn} --vad ${vad} \
-#                                         --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-#                                         ${data}/${train}${feats_suffix} ${num_gauss} \
-#                                         ${diag_ubm}
+        diag_ubm=${exp_dir}/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}
+        if [ ! -f ${diag_ubm}/final.dubm ]; then
+            echo "*** Training diag UBM with $train dataset ***"
+            local/lid/train_diag_ubm.sh --cmd "$train_cmd --mem 20G" \
+                                        --nj ${nj_train} --num-threads 8 \
+                                        --parallel_opts "" \
+                                        --cmvn ${cmvn} --vad ${vad} \
+                                        --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                        ${data}/${train}${feats_suffix} ${num_gauss} \
+                                        ${diag_ubm}
 
-#             #TODO : use feat_opts to retrieve feat opts for future scripts. 
-#             printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${diag_ubm}/feat_opts
-#         else
-#             echo "*** diag UBM with $train dataset already exists - skipping ***"
-#         fi
-#     done
-# fi
+            #TODO : use feat_opts to retrieve feat opts for future scripts. 
+            printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${diag_ubm}/feat_opts
+        else
+            echo "*** diag UBM with $train dataset already exists - skipping ***"
+        fi
+    done
+fi
 
 
 
-# # ----------------------------------------------------------------------
-# #Stage 4 : Full UBM Training
-# # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+#Stage 4 : Full UBM Training
+# ----------------------------------------------------------------------
 
-# if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 4 ] || [ $stage -lt 4 ] && [ "${grad}" == "true" ]; then
     
-#     for train in $train_fin $train_ger; do 
+    for train in $train_fin $train_ger; do 
 
-#         diag_ubm=${exp_dir}/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}
-#         full_ubm=${exp_dir}/ubm${exp_suffix}/full_ubm_${num_gauss}_${train}${feats_suffix}
+        diag_ubm=${exp_dir}/ubm${exp_suffix}/diag_ubm_${num_gauss}_${train}${feats_suffix}
+        full_ubm=${exp_dir}/ubm${exp_suffix}/full_ubm_${num_gauss}_${train}${feats_suffix}
 
-#         if [ ! -f ${full_ubm}/final.ubm ]; then 
+        if [ ! -f ${full_ubm}/final.ubm ]; then 
             
-#             if [ "$diag_only" == "true" ]; then
+            if [ "$diag_only" == "true" ]; then
 
-#                 echo "Training on diagonal ubm only - no full ubm"
+                echo "Training on diagonal ubm only - no full ubm"
                 
-#                 mkdir -p ${full_ubm}
+                mkdir -p ${full_ubm}
                 
-#                 "$train_cmd"  ${full_ubm}/log/gmm-to-fgmm.log \
-#                               gmm-global-to-fgmm ${diag_ubm}/final.dubm ${full_ubm}/final.ubm
+                "$train_cmd"  ${full_ubm}/log/gmm-to-fgmm.log \
+                              gmm-global-to-fgmm ${diag_ubm}/final.dubm ${full_ubm}/final.ubm
 
-#             else
+            else
                 
-#                 #Same for full ubm - need to remove the cmn 
-#                 echo "*** Training full UBM with $train dataset ***"
-#                 local/lid/train_full_ubm.sh --nj ${nj_train} --cmd "$train_cmd" \
-#                                             --cmvn ${cmvn} --vad ${vad} \
-#                                             --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-#                                             ${data}/${train}${feats_suffix} \
-#                                             ${diag_ubm} ${full_ubm};
+                #Same for full ubm - need to remove the cmn 
+                echo "*** Training full UBM with $train dataset ***"
+                local/lid/train_full_ubm.sh --nj ${nj_train} --cmd "$train_cmd" \
+                                            --cmvn ${cmvn} --vad ${vad} \
+                                            --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                            ${data}/${train}${feats_suffix} \
+                                            ${diag_ubm} ${full_ubm};
 
                 
-#             fi
+            fi
 
 
-#             printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${full_ubm}/feat_opts
+            printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${full_ubm}/feat_opts
 
-#         else
-#             echo "${full_ubm}/final.ubm already exists - skipping full UBM training"
-#         fi
-#     done
-# fi
+        else
+            echo "${full_ubm}/final.ubm already exists - skipping full UBM training"
+        fi
+    done
+fi
 
 
-# # ----------------------------------------------------------------------
-# #Stage 5: Training I-Vector Extractor
-# # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+#Stage 5: Training I-Vector Extractor
+# ----------------------------------------------------------------------
 
-# if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 5 ] || [ $stage -lt 5 ] && [ "${grad}" == "true" ]; then
     
-#     for train in $train_fin $train_ger; do 
+    for train in $train_fin $train_ger; do 
 
-#         full_ubm=${exp_dir}/ubm${exp_suffix}/full_ubm_${num_gauss}_${train}${feats_suffix}
-#         extractor=${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix}
+        full_ubm=${exp_dir}/ubm${exp_suffix}/full_ubm_${num_gauss}_${train}${feats_suffix}
+        extractor=${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix}
         
-#         if [ ! -f ${extractor}/final.ie ]; then
-#             echo "Training IVector Extractor for train set ${train}"
+        if [ ! -f ${extractor}/final.ie ]; then
+            echo "Training IVector Extractor for train set ${train}"
             
-#             local/lid/train_ivector_extractor.sh --cmd "$train_cmd --mem 2G" \
-#                                                  --nj ${nj_train} \
-#                                                  --num-iters 5 --num_processes 1 \
-#                                                  --ivector_dim ${ivector_dim} \
-#                                                  --cmvn ${cmvn} --vad ${vad} \
-#                                                  --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-#                                                  ${full_ubm}/final.ubm ${data}/${train}${feats_suffix}  ${extractor}
-#             printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${extractor}/feat_opts
-#         else
-#             echo "${extractor}/final.ie already exists - skipping training ivector extractor for ${train}"
-#         fi
-#     done
-# fi
+            local/lid/train_ivector_extractor.sh --cmd "$train_cmd --mem 2G" \
+                                                 --nj ${nj_train} \
+                                                 --num-iters 5 --num_processes 1 \
+                                                 --ivector_dim ${ivector_dim} \
+                                                 --cmvn ${cmvn} --vad ${vad} \
+                                                 --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                                 ${full_ubm}/final.ubm ${data}/${train}${feats_suffix}  ${extractor}
+            printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${extractor}/feat_opts
+        else
+            echo "${extractor}/final.ie already exists - skipping training ivector extractor for ${train}"
+        fi
+    done
+fi
 
 
 
-# # ----------------------------------------------------------------------
-# #Stage 6: Extracting I-Vectors (train and test)
-# # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+#Stage 6: Extracting I-Vectors (train and test)
+# ----------------------------------------------------------------------
 
-# if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ]; then
+if [ $stage -eq 6 ] || [ $stage -lt 6 ] && [ "${grad}" == "true" ]; then
 
-#     #Also extracting train I-Vectors as will be useful when computing LDA. 
-
-
-#     # DO it separatel for german and finnish 
-#         for train in $train_fin; do
-
-#             for iv_type in ${train} ${test_fin}; do 
-
-#                 ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
-
-#                 if [ ! -f ${ivec_dir}/ivector.scp ]; then
-
-#                     nj_ivec=$(wc -l ${data}/${iv_type}${feats_suffix}/spk2utt | cut -d' ' -f1)
-#                     echo NJ VEC = $nj_ivec
-#                     local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
-#                                                   --cmvn ${cmvn} --vad ${vad} \
-#                                                   --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-#                                                   ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${iv_type}${feats_suffix} ${ivec_dir};
-#                     printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
-#                 else
-#                     echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
-#                 fi
-#             done
-#         done
+    #Also extracting train I-Vectors as will be useful when computing LDA. 
 
 
+    # DO it separatel for german and finnish 
+        for train in $train_fin; do
 
-#         # ---------------------------------------------------------------------
-#         # Same for train ger
-#         for train in $train_ger; do
+            for iv_type in ${train} ${test_fin}; do 
 
-#             for iv_type in ${train} ${test_ger}; do 
+                ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
 
-#                 ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
+                if [ ! -f ${ivec_dir}/ivector.scp ]; then
 
-#                     nj_ivec=$(wc -l ${data}/${iv_type}${feats_suffix}/spk2utt | cut -d' ' -f1)
-#                     echo NJ VEC = $nj_ivec
+                    nj_ivec=$(wc -l ${data}/${iv_type}${feats_suffix}/spk2utt | cut -d' ' -f1)
+                    echo NJ VEC = $nj_ivec
+                    local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
+                                                  --cmvn ${cmvn} --vad ${vad} \
+                                                  --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${iv_type}${feats_suffix} ${ivec_dir};
+                    printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
+                else
+                    echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
+                fi
+            done
+        done
+
+
+
+        # ---------------------------------------------------------------------
+        # Same for train ger
+        for train in $train_ger; do
+
+            for iv_type in ${train} ${test_ger}; do 
+
+                ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${iv_type}${feats_suffix}
+
+                    nj_ivec=$(wc -l ${data}/${iv_type}${feats_suffix}/spk2utt | cut -d' ' -f1)
+                    echo NJ VEC = $nj_ivec
                 
-#                 if [ ! -f ${ivec_dir}/ivector.scp ]; then
-#                     local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
-#                                                   --cmvn ${cmvn} --vad ${vad} \
-#                                                   --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
-#                                                   ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${iv_type}${feats_suffix} ${ivec_dir};
-#                     printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
-#                 else
-#                     echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
-#                 fi
-#             done
-#         done
-# fi
+                if [ ! -f ${ivec_dir}/ivector.scp ]; then
+                    local/lid/extract_ivectors.sh --cmd "$train_cmd --mem 3G" --nj ${nj_ivec} \
+                                                  --cmvn ${cmvn} --vad ${vad} \
+                                                  --deltas ${deltas} --deltas_sdc ${deltas_sdc} \
+                                                  ${exp_dir}/ubm${exp_suffix}/extractor_full_ubm_${num_gauss}_${train}${feats_suffix} ${data}/${iv_type}${feats_suffix} ${ivec_dir};
+                    printf "vad: $vad \n cmvn: $cmvn \n deltas: $deltas \n deltas_sdc: $deltas_sdc" > ${ivec_dir}/feat_opts;
+                else
+                    echo "Ivectors in ${ivec_dir} already exist - skipping Ivector Extraction"
+                fi
+            done
+        done
+fi
 
 
 
@@ -395,64 +395,65 @@ fi
   
 # fi
 
-# # ----------------------------------------------------------------------
-# #Stage 8: Setting up ABX directory for non-LDA I-Vectors AND LDA
-# # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+#Stage 8: Setting up ABX directory for non-LDA I-Vectors AND LDA
+# ----------------------------------------------------------------------
 
-# if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepare_abx" == "true" ]; then
+if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepare_abx" == "true" ]; then
 
 
-#     for train in $train_fin; do
-#         num_spk_train=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
-#         lda_dim_train=$(($num_spk_train - 1))
+    for train in $train_fin; do
+        num_spk_train=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
+        lda_dim_train=$(($num_spk_train - 1))
         
             
-#         ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}       
+        ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}       
 
-#         #create ivectors.item #TODO ADD SLURM
-#         if [ ! -f ${ivec_dir}/ivectors.item ]; then
-#             echo "** Creating ${ivec_dir}/ivectors.item **"
-#             python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
-#         fi
+        #create ivectors.item #TODO ADD SLURM
+        if [ ! -f ${ivec_dir}/ivectors.item ]; then
+            echo "** Creating ${ivec_dir}/ivectors.item **"
+            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_fin}${feats_suffix} ${ivec_dir}
+        fi
  
 
+        for x in ivector ; do #changed name from ivectors to ivector in h5f file
         
-#         for x in ivector lda-${lda_dim_test_engfin}-test_ivector lda-${lda_dim_train}-train_ivector; do #changed name from ivectors to ivector in h5f file
+        # for x in ivector lda-${lda_dim_test_engfin}-test_ivector lda-${lda_dim_train}-train_ivector; do #changed name from ivectors to ivector in h5f file
 
-#             if [ ! -f ${ivec_dir}/${x}.h5f ]; then
-#                 echo "** Computing ivectors_to_h5f files for ${ivec_dir}/** for ${x}"
-#                 echo " Should be in ${ivec_dir}/${x}.h5f"
-#                 rm -rf ${ivec_dir}/tmp
-#                 rm -f ${ivec_dir}/${x}.h5f
-#                 sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2h5f_${x}.log local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
-#                 while [ ! -f ${ivec_dir}/${x}.h5f ]; do sleep 0.5; done
-#             else
-#                 echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
-#             fi
+            if [ ! -f ${ivec_dir}/${x}.h5f ]; then
+                echo "** Computing ivectors_to_h5f files for ${ivec_dir}/** for ${x}"
+                echo " Should be in ${ivec_dir}/${x}.h5f"
+                rm -rf ${ivec_dir}/tmp
+                rm -f ${ivec_dir}/${x}.h5f
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2h5f_${x}.log local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
+                while [ ! -f ${ivec_dir}/${x}.h5f ]; do sleep 0.5; done
+            else
+                echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
+            fi
 
-#             if [ ! -f ${ivec_dir}/${x}.csv ]; then
-#                 echo "** Creating ivectors.csv file for for ${ivec_dir}/** for ${x}"
-#                 sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2csv_${x}.log local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
-#                 while [ ! -f ${ivec_dir}/${x}.csv ]; do sleep 0.1; done
-#             fi
+            if [ ! -f ${ivec_dir}/${x}.csv ]; then
+                echo "** Creating ivectors.csv file for for ${ivec_dir}/** for ${x}"
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2csv_${x}.log local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
+                while [ ! -f ${ivec_dir}/${x}.csv ]; do sleep 0.1; done
+            fi
             
 
-#             #create abx directories
-#             path_to_h5f=$(readlink -f ${ivec_dir}/${x}.h5f)
-#             path_to_item=$(readlink -f ${ivec_dir}/ivectors.item)
-#             path_to_csv=$(readlink -f ${ivec_dir}/${x}.csv)
-#             tgt_abx_dir=${abx_dir}${exp_suffix}/${x}_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}
+            #create abx directories
+            path_to_h5f=$(readlink -f ${ivec_dir}/${x}.h5f)
+            path_to_item=$(readlink -f ${ivec_dir}/ivectors.item)
+            path_to_csv=$(readlink -f ${ivec_dir}/${x}.csv)
+            tgt_abx_dir=${abx_dir}${exp_suffix}/${x}_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_fin}${feats_suffix}
 
-#             echo "** Creating abx directories in ${tgt_abx_dir} **"
-#             # rm -f ${tgt_abx_dir}/ivectors.*
-#             mkdir -p ${tgt_abx_dir}
+            echo "** Creating abx directories in ${tgt_abx_dir} **"
+            # rm -f ${tgt_abx_dir}/ivectors.*
+            mkdir -p ${tgt_abx_dir}
             
-#             if [ ! -f ${tgt_abx_dir}/ivectors.h5f ]; then ln -s ${path_to_h5f} ${tgt_abx_dir}/ivectors.h5f; fi
-#             if [ ! -f ${tgt_abx_dir}/ivectors.item ]; then ln -s ${path_to_item} ${tgt_abx_dir}/. ; fi
-#             if [ ! -f ${tgt_abx_dir}/ivectors.csv ]; then ln -s  ${path_to_csv} ${tgt_abx_dir}/ivectors.csv; fi;
+            if [ ! -f ${tgt_abx_dir}/ivectors.h5f ]; then ln -s ${path_to_h5f} ${tgt_abx_dir}/ivectors.h5f; fi
+            if [ ! -f ${tgt_abx_dir}/ivectors.item ]; then ln -s ${path_to_item} ${tgt_abx_dir}/. ; fi
+            if [ ! -f ${tgt_abx_dir}/ivectors.csv ]; then ln -s  ${path_to_csv} ${tgt_abx_dir}/ivectors.csv; fi;
             
-#         done;
-#     done;
+        done;
+    done;
 
 
 
@@ -460,58 +461,59 @@ fi
 
 
     
-#     for train in $train_ger; do
-#         num_spk_train=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
-#         lda_dim_train=$(($num_spk_train - 1))
+    for train in $train_ger; do
+        num_spk_train=$(wc -l ${data}/${train}${feats_suffix}/spk2utt | cut -d' ' -f1)
+        lda_dim_train=$(($num_spk_train - 1))
         
             
-#         ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}       
+        ivec_dir=${exp_dir}/ivectors${exp_suffix}/ivectors_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}       
 
-#         #create ivectors.item #TODO ADD SLURM
-#         if [ ! -f ${ivec_dir}/ivectors.item ]; then
-#             echo "** Creating ${ivec_dir}/ivectors.item **"
-#             python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
-#         fi
+        #create ivectors.item #TODO ADD SLURM
+        if [ ! -f ${ivec_dir}/ivectors.item ]; then
+            echo "** Creating ${ivec_dir}/ivectors.item **"
+            python local/utils/utt2lang_to_item.py --ivector_dim ${ivector_dim} ${data}/${test_ger}${feats_suffix} ${ivec_dir}
+        fi
  
+        for x in ivector; do #changed name from ivectors to ivector in h5f file
 
         
-#         for x in ivector lda-${lda_dim_test_engger}-test_ivector lda-${lda_dim_train}-train_ivector; do #changed name from ivectors to ivector in h5f file
+        # for x in ivector lda-${lda_dim_test_engger}-test_ivector lda-${lda_dim_train}-train_ivector; do #changed name from ivectors to ivector in h5f file
 
-#             if [ ! -f ${ivec_dir}/${x}.h5f ]; then
-#                 echo "** Computing ivectors_to_h5f files for ${ivec_dir}/** for ${x}"
-#                 echo " Should be in ${ivec_dir}/${x}.h5f"
-#                 rm -rf ${ivec_dir}/tmp
-#                 rm -f ${ivec_dir}/${x}.h5f
-#                 sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2h5f_${x}.log local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
-#                 while [ ! -f ${ivec_dir}/${x}.h5f ]; do sleep 0.5; done
-#             else
-#                 echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
-#             fi
+            if [ ! -f ${ivec_dir}/${x}.h5f ]; then
+                echo "** Computing ivectors_to_h5f files for ${ivec_dir}/** for ${x}"
+                echo " Should be in ${ivec_dir}/${x}.h5f"
+                rm -rf ${ivec_dir}/tmp
+                rm -f ${ivec_dir}/${x}.h5f
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2h5f_${x}.log local/utils/ivectors_to_h5f.py --output_name ${x}.h5f ${ivec_dir}/${x}.scp ${ivec_dir}
+                while [ ! -f ${ivec_dir}/${x}.h5f ]; do sleep 0.5; done
+            else
+                echo "${ivec_dir}/${x}.h5f already exists. Not recreating it"
+            fi
 
-#             if [ ! -f ${ivec_dir}/${x}.csv ]; then
-#                 echo "** Creating ivectors.csv file for for ${ivec_dir}/** for ${x}"
-#                 sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2csv_${x}.log local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
-#                 while [ ! -f ${ivec_dir}/${x}.csv ]; do sleep 0.1; done
-#             fi
+            if [ ! -f ${ivec_dir}/${x}.csv ]; then
+                echo "** Creating ivectors.csv file for for ${ivec_dir}/** for ${x}"
+                sbatch --mem=1G -n 5 -o ${ivec_dir}/log/ivec2csv_${x}.log local/utils/ivectors_to_csv.py --output_name ${x}.csv ${ivec_dir}/${x}.scp ${ivec_dir};
+                while [ ! -f ${ivec_dir}/${x}.csv ]; do sleep 0.1; done
+            fi
             
 
-#             #create abx directories
-#             path_to_h5f=$(readlink -f ${ivec_dir}/${x}.h5f)
-#             path_to_item=$(readlink -f ${ivec_dir}/ivectors.item)
-#             path_to_csv=$(readlink -f ${ivec_dir}/${x}.csv)
-#             tgt_abx_dir=${abx_dir}${exp_suffix}/${x}_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}
+            #create abx directories
+            path_to_h5f=$(readlink -f ${ivec_dir}/${x}.h5f)
+            path_to_item=$(readlink -f ${ivec_dir}/ivectors.item)
+            path_to_csv=$(readlink -f ${ivec_dir}/${x}.csv)
+            tgt_abx_dir=${abx_dir}${exp_suffix}/${x}_${num_gauss}_tr-${train}${feats_suffix}_ts-${test_ger}${feats_suffix}
 
-#             echo "** Creating abx directories in ${tgt_abx_dir} **"
-#             # rm -f ${tgt_abx_dir}/ivectors.*
-#              mkdir -p ${tgt_abx_dir}
+            echo "** Creating abx directories in ${tgt_abx_dir} **"
+            # rm -f ${tgt_abx_dir}/ivectors.*
+             mkdir -p ${tgt_abx_dir}
             
-#             if [ ! -f ${tgt_abx_dir}/ivectors.h5f ]; then ln -s ${path_to_h5f} ${tgt_abx_dir}/ivectors.h5f; fi
-#             if [ ! -f ${tgt_abx_dir}/ivectors.item ]; then ln -s ${path_to_item} ${tgt_abx_dir}/. ; fi
-#             if [ ! -f ${tgt_abx_dir}/ivectors.csv ]; then ln -s  ${path_to_csv} ${tgt_abx_dir}/ivectors.csv ; fi
-#         done;
-#     done;
+            if [ ! -f ${tgt_abx_dir}/ivectors.h5f ]; then ln -s ${path_to_h5f} ${tgt_abx_dir}/ivectors.h5f; fi
+            if [ ! -f ${tgt_abx_dir}/ivectors.item ]; then ln -s ${path_to_item} ${tgt_abx_dir}/. ; fi
+            if [ ! -f ${tgt_abx_dir}/ivectors.csv ]; then ln -s  ${path_to_csv} ${tgt_abx_dir}/ivectors.csv ; fi
+        done;
+    done;
         
-# fi
+fi
 
 
 # # # ----------------------------------------------------------------------

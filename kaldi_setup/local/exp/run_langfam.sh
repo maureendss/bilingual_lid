@@ -3,12 +3,14 @@
 # File for first steps on IVector Experiments
 
 
+pitch=false
+
 mfcc_conf=mfcc.original.conf # mfcc configuration file. The "original" one attempts to reproduce the settings in julia's experiments. 
 stage=0
 grad=true
 nj=40
 nj_train=10
-data=data/emime-controlled #to chnge. Maybe make as complusory option?
+data=data/librispeech #to chnge. Maybe make as complusory option?
 raw_data=../../data/emime
 raw_data_lists=../../data/emime/lists-controlled
 no_speaker_info=false
@@ -43,7 +45,7 @@ lda_dim_train=
 num_gauss=128
 ivector_dim=150
 
-
+lda=true
 
 #Additional setup
 # run_inversed_lda=false
@@ -56,7 +58,12 @@ ivector_dim=150
 
 set -e # exit on error
 
+if [ $pitch == "true" ]; then
+    feats_suffix=${feats_suffix}_pitch
+    exp_suffix=${exp_suffix}_pitch
+fi
 
+    
 # ----------------------------------------------------------------------
 #Stage 0: Kaldi Data Preparation
 # ----------------------------------------------------------------------
@@ -83,11 +90,16 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ]; then
     mfcc_conf=conf/mfcc.original.conf
 
     for x in all; do
-
         if [ ! -f ${data}/${x}${feats_suffix}/feats.scp ]; then
+            if [ $pitch == "true" ]; then
+                
+                echo "computing features with pitch"
+                steps/make_mfcc_pitch.sh --mfcc-config ${mfcc_conf} --cmd "${train_cmd}" --nj ${nj} ${data}/${x}${feats_suffix}
+            else
             
             steps/make_mfcc.sh --mfcc-config ${mfcc_conf} --cmd "${train_cmd}" --nj ${nj} \
                                ${data}/${x}${feats_suffix}
+            fi
         fi
 
         if [ "${cmvn}" == "true" ] && [ ! -f ${data}/${x}${feats_suffix}/cmvn.scp ]; then
@@ -101,18 +113,15 @@ if [ $stage -eq 1 ] || [ $stage -lt 1 ] && [ "${grad}" == "true" ]; then
         utils/validate_data_dir.sh --no-text ${data}/${x}${feats_suffix}
 
     done
-    # If wanna add pitch for later experiments - have to run the make mfcc pitch script here instead. 
-    # Same if wanna add CMN. Doesn't really make sense here anyway. .
 fi 
 
 # ----------------------------------------------------------------------
 #Stage 2 : Combining datasets
 # ----------------------------------------------------------------------
-
 if [ $stage -eq 2 ] || [ $stage -lt 2 ] && [ "${grad}" == "true" ]; then
-datasets_list="${test_ger} ${test_fin} ${train_ger} ${train_fin}"
-local/data_prep/combine_sets_emime.sh --utt_lists_dir ${raw_data_lists} --datasets_list "${datasets_list}" ${data}
+    datasets_list="${test_ger} ${test_fin} ${train_ger} ${train_fin}"
 
+    local/data_prep/combine_sets_emime.sh --utt_lists_dir ${raw_data_lists} --datasets_list "${datasets_list}" --feats_suffix "${feats_suffix}" ${data}
 fi
  
 
@@ -306,7 +315,7 @@ fi
 
 
 if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepare_abx" == "true" ]; then
-
+if [ $lda == "true" ]; then
 
     # -------------------------------------
 
@@ -393,6 +402,8 @@ if [ $stage -eq 7 ] || [ $stage -lt 7 ] && [ "${grad}" == "true" ] && [ "$prepar
     done
   
 fi
+fi
+
 
 # ----------------------------------------------------------------------
 #Stage 8: Setting up ABX directory for non-LDA I-Vectors AND LDA
@@ -417,8 +428,13 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
  
 
         
-        for x in ivector lda_lang-${lda_dim_test_engfin}-test_ivector lda_lang-${lda_dim_train}-train_ivector; do #changed name from ivectors to ivector in h5f file
-
+        if [ $lda == "true" ]; then
+            list="ivector lda_lang-${lda_dim_test_engfin}-test_ivector lda_lang-${lda_dim_train}-train_ivector"
+        else
+            list="ivector"
+        fi
+        for x in $list ; do 
+            
             if [ ! -f ${ivec_dir}/${x}.h5f ]; then
                 echo "** Computing ivectors_to_h5f files for ${ivec_dir}/** for ${x}"
                 echo " Should be in ${ivec_dir}/${x}.h5f"
@@ -475,8 +491,14 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
  
 
         
-        for x in ivector lda_lang-${lda_dim_test_engger}-test_ivector lda_lang-${lda_dim_train}-train_ivector; do #changed name from ivectors to ivector in h5f file
 
+        if [ $lda == "true" ]; then
+            list="ivector lda_lang-${lda_dim_test_engger}-test_ivector lda_lang-${lda_dim_train}-train_ivector"
+        else
+            list="ivector"
+        fi
+        for x in $list ; do 
+            
             if [ ! -f ${ivec_dir}/${x}.h5f ]; then
                 echo "** Computing ivectors_to_h5f files for ${ivec_dir}/** for ${x}"
                 echo " Should be in ${ivec_dir}/${x}.h5f"
@@ -514,7 +536,7 @@ if [ $stage -eq 8 ] || [ $stage -lt 8 ] && [ "${grad}" == "true" ] && [ "$prepar
 fi
 
 
-if [ $stage -eq 10 ] || [ $stage -lt 10 ] && [ "${grad}" == "true" ]; then
-    echo "Running orthogonal complement of LDA experiments"
-    ./local/exp/run_langfam_orthogonal_complement.sh --train_ger "$train_ger" --train_fin "$train_fin" --test_ger "$test_ger" --test_fin "$test_fin"
-fi
+# if [ $stage -eq 10 ] || [ $stage -lt 10 ] && [ "${grad}" == "true" ]; then
+#     echo "Running orthogonal complement of LDA experiments"
+#     ./local/exp/run_langfam_orthogonal_complement.sh --train_ger "$train_ger" --train_fin "$train_fin" --test_ger "$test_ger" --test_fin "$test_fin"
+# fi

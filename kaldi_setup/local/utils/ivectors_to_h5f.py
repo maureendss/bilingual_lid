@@ -42,6 +42,7 @@ if __name__ == "__main__":
             np.savez('{}/tmp/{}'.format(args.target_dir, key), features=ivector_2d, time=times)
     print('aaa')
     any2h5features.convert('{}/tmp/'.format(args.target_dir), '{}/{}'.format(args.target_dir, args.output_name))
+    print(args.target_dir, args.output_name)
     print('bbb')
     
     # shutil.rmtree('{}/tmp'.format(args.target_dir))

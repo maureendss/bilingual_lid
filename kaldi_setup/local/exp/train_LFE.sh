@@ -21,8 +21,8 @@ feats_suffix="" #mainly for vad and cmvn. What directly interacts with features
 exp_suffix="" #redundant with exp_dir? TODO to change
 
 
-train_ger="chinese_10h_4spk" #all datasets related to eng-ger train sets
-train_fin="chinese_10h_10spk"
+train_ger="english_10h_4spk" #all datasets related to eng-ger train sets
+train_fin="english_10h_10spk"
 
 # # Also run it with train_eng-ger-mix and train_eng-fin-mix
 test_ger=lfe-test_bil_1_eng-ger

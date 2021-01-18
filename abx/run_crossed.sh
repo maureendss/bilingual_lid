@@ -17,7 +17,7 @@ value_a=$2
 value_b=$3
 
 
-for x in $dir/ivec* ; do
+for x in $dir/ivec*lfe* ; do
     mkdir -p ${x}/log
     
     if [ ! -f ${x}/abx_crossed_${value_a}_${value_b}.avg ]; then
